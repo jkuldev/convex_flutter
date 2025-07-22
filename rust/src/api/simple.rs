@@ -124,7 +124,7 @@ impl MobileConvexClient {
     #[frb]
     pub fn new(deployment_url: String, client_id: String) -> MobileConvexClient {
         #[cfg(debug_assertions)]
-        android_logger::init_once(Config::default().with_max_level(LevelFilter::Trace));
+        android_logger::init_once(Config::default().with_max_level(LevelFilter::Error));
         let rt = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
