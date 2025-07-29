@@ -1,6 +1,6 @@
 name: convex_flutter
 description: A Flutter package for Convex backend integration, enabling developers to interact with Convex services, manage data, and build applications with real-time synchronization.
-version: 1.0.4
+version: 1.2.0
 repository: https://github.com/jkuldev/convex_flutter
 homepage: https://jkuldev.com
 
