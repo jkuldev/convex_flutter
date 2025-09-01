@@ -125,7 +125,7 @@ abstract class RustLibApi extends BaseApi {
     String? token,
   });
 
-  Future<ArcSubscriptionHandle> crateMobileConvexClientSubscribe({
+  Future<SubscriptionHandle> crateMobileConvexClientSubscribe({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -136,15 +136,6 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateSubscriptionHandleCancel({
     required SubscriptionHandle that,
   });
-
-  RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_ArcSubscriptionHandle;
-
-  RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_ArcSubscriptionHandle;
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_ArcSubscriptionHandlePtr;
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_CallbackSubscriber;
@@ -541,7 +532,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ArcSubscriptionHandle> crateMobileConvexClientSubscribe({
+  Future<SubscriptionHandle> crateMobileConvexClientSubscribe({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -575,7 +566,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: SseCodec(
           decodeSuccessData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle,
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSubscriptionHandle,
           decodeErrorData: sse_decode_client_error,
         ),
         constMeta: kCrateMobileConvexClientSubscribeConstMeta,
@@ -699,14 +690,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_ArcSubscriptionHandle => wire
-      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle;
-
-  RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_ArcSubscriptionHandle => wire
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle;
-
-  RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_CallbackSubscriber => wire
       .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber;
 
@@ -742,15 +725,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return AnyhowException(raw as String);
-  }
-
-  @protected
-  ArcSubscriptionHandle
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -859,15 +833,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         raw,
       ).map((e) => MapEntry(e.$1, e.$2)),
     );
-  }
-
-  @protected
-  ArcSubscriptionHandle
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -995,18 +960,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ArcSubscriptionHandle
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
-  }
-
-  @protected
   CallbackSubscriber
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber(
     SseDeserializer deserializer,
@@ -1116,18 +1069,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_record_string_string(deserializer);
     return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
-  }
-
-  @protected
-  ArcSubscriptionHandle
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
   }
 
   @protected
@@ -1293,19 +1234,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    ArcSubscriptionHandle self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as ArcSubscriptionHandleImpl).frbInternalSseEncode(move: true),
-      serializer,
-    );
-  }
-
-  @protected
-  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber(
     CallbackSubscriber self,
     SseSerializer serializer,
@@ -1455,19 +1383,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_record_string_string(
       self.entries.map((e) => (e.key, e.value)).toList(),
-      serializer,
-    );
-  }
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    ArcSubscriptionHandle self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as ArcSubscriptionHandleImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -1625,35 +1540,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 }
 
 @sealed
-class ArcSubscriptionHandleImpl extends RustOpaque
-    implements ArcSubscriptionHandle {
-  // Not to be used by end users
-  ArcSubscriptionHandleImpl.frbInternalDcoDecode(List<dynamic> wire)
-    : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  ArcSubscriptionHandleImpl.frbInternalSseDecode(
-    BigInt ptr,
-    int externalSizeOnNative,
-  ) : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount: RustLib
-        .instance
-        .api
-        .rust_arc_increment_strong_count_ArcSubscriptionHandle,
-    rustArcDecrementStrongCount: RustLib
-        .instance
-        .api
-        .rust_arc_decrement_strong_count_ArcSubscriptionHandle,
-    rustArcDecrementStrongCountPtr: RustLib
-        .instance
-        .api
-        .rust_arc_decrement_strong_count_ArcSubscriptionHandlePtr,
-  );
-}
-
-@sealed
 class CallbackSubscriberDartFnImpl extends RustOpaque
     implements CallbackSubscriberDartFn {
   // Not to be used by end users
@@ -1784,7 +1670,7 @@ class MobileConvexClientImpl extends RustOpaque implements MobileConvexClient {
       .crateMobileConvexClientSetAuth(that: this, token: token);
 
   /// Subscribes to real-time updates from a Convex query.
-  Future<ArcSubscriptionHandle> subscribe({
+  Future<SubscriptionHandle> subscribe({
     required String name,
     required Map<String, String> args,
     required FutureOr<void> Function(String) onUpdate,

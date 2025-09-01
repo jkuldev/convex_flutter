@@ -72,13 +72,13 @@ impl QuerySubscriber for CallbackSubscriber {
 /// Opaque type for Dart, representing a subscription handle with cancellation.
 #[frb(opaque)]
 pub struct SubscriptionHandle {
-    cancel_sender: Mutex<Option<Sender<()>>>, // Sender to cancel the subscription
+    cancel_sender: Arc<Mutex<Option<Sender<()>>>>, // Sender to cancel the subscription
 }
 
 impl SubscriptionHandle {
     fn new(cancel_sender: Sender<()>) -> Self {
         SubscriptionHandle {
-            cancel_sender: Mutex::new(Some(cancel_sender)),
+            cancel_sender: Arc::new(Mutex::new(Some(cancel_sender))),
         }
     }
 
@@ -181,7 +181,7 @@ impl MobileConvexClient {
         args: HashMap<String, String>,
         on_update: impl Fn(String) -> DartFnFuture<()> + Send + Sync + 'static,
         on_error: impl Fn(String, Option<String>) -> DartFnFuture<()> + Send + Sync + 'static,
-    ) -> Result<Arc<SubscriptionHandle>, ClientError> {
+    ) -> Result<SubscriptionHandle, ClientError> {
         let subscriber = Arc::new(CallbackSubscriberDartFn {
             on_update: Box::new(on_update),
             on_error: Box::new(on_error),
@@ -197,7 +197,7 @@ impl MobileConvexClient {
         name: String,
         args: HashMap<String, String>,
         subscriber: Arc<dyn QuerySubscriber>,
-    ) -> anyhow::Result<Arc<SubscriptionHandle>> {
+    ) -> anyhow::Result<SubscriptionHandle> {
         let mut client = self.connected_client().await?;
         debug!("New subscription");
         let mut subscription = client
@@ -236,7 +236,7 @@ impl MobileConvexClient {
             }
             debug!("Subscription canceled");
         });
-        Ok(Arc::new(SubscriptionHandle::new(cancel_sender)))
+        Ok(SubscriptionHandle::new(cancel_sender))
     }
 
     /// Executes a mutation on the Convex backend.

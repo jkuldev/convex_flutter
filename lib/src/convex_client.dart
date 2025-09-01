@@ -74,7 +74,7 @@ class ConvexClient {
       await RustLib.init();
 
       // Create new mobile client instance
-      final client = await MobileConvexClient.newInstance(
+      final client = MobileConvexClient(
         deploymentUrl: deploymentUrl,
         clientId: clientId,
       );
@@ -108,7 +108,7 @@ class ConvexClient {
   /// [onError] - Callback function called when an error occurs
   ///
   /// Returns a handle that can be used to manage the subscription
-  Future<ArcSubscriptionHandle> subscribe({
+  Future<WrappedSubscriptionHandle> subscribe({
     required String name,
     required Map<String, String> args,
     required void Function(String) onUpdate,
@@ -158,14 +158,5 @@ class ConvexClient {
   /// Used to authenticate requests to the Convex backend
   Future<void> setAuth({required String? token}) async {
     return await _client.setAuth(token: token);
-  }
-
-  /// Cancels an active subscription
-  ///
-  /// [handle] - The subscription handle to cancel
-  ///
-  /// Cleans up resources associated with the subscription
-  void cancelSubscription(ArcSubscriptionHandle handle) {
-    handle.dispose();
   }
 }

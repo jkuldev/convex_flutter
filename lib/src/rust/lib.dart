@@ -11,9 +11,6 @@ part 'lib.freezed.dart';
 // These functions are ignored because they are not marked as `pub`: `connected_client`, `handle_direct_function_result`, `internal_action`, `internal_mutation`, `internal_set_auth`, `internal_subscribe`, `new`, `parse_json_args`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `from`
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < SubscriptionHandle >>>
-abstract class ArcSubscriptionHandle implements RustOpaqueInterface {}
-
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CallbackSubscriber>>
 abstract class CallbackSubscriber
     implements RustOpaqueInterface, QuerySubscriber {
@@ -68,7 +65,7 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
   Future<void> setAuth({String? token});
 
   /// Subscribes to real-time updates from a Convex query.
-  Future<ArcSubscriptionHandle> subscribe({
+  Future<SubscriptionHandle> subscribe({
     required String name,
     required Map<String, String> args,
     required FutureOr<void> Function(String) onUpdate,
