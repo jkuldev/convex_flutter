@@ -1,5 +1,5 @@
 import 'package:convex_flutter/convex_flutter.dart';
-import 'package:convex_flutter/src/lib/utils.dart';
+import 'package:convex_flutter/src/utils.dart';
 
 /// A client for interacting with a Convex backend service.
 ///
