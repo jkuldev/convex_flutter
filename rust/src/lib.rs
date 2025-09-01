@@ -83,7 +83,7 @@ impl SubscriptionHandle {
     }
 
     /// Cancels the subscription by sending a cancellation signal.
-    #[frb]
+    #[frb(sync)]
     pub fn cancel(&self) {
         if let Some(sender) = self.cancel_sender.lock().take() {
             sender.send(()).unwrap();
@@ -124,7 +124,7 @@ pub struct MobileConvexClient {
 
 impl MobileConvexClient {
     /// Creates a new MobileConvexClient instance with the given deployment URL and client ID.
-    #[frb]
+    #[frb(sync)]
     pub fn new(deployment_url: String, client_id: String) -> MobileConvexClient {
         #[cfg(debug_assertions)]
         android_logger::init_once(Config::default().with_max_level(LevelFilter::Error));

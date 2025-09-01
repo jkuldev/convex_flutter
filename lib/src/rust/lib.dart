@@ -45,9 +45,8 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
     required Map<String, String> args,
   });
 
-  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
   /// Creates a new MobileConvexClient instance with the given deployment URL and client ID.
-  static Future<MobileConvexClient> newInstance({
+  factory MobileConvexClient({
     required String deploymentUrl,
     required String clientId,
   }) => RustLib.instance.api.crateMobileConvexClientNew(
@@ -76,7 +75,7 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SubscriptionHandle>>
 abstract class SubscriptionHandle implements RustOpaqueInterface {
   /// Cancels the subscription by sending a cancellation signal.
-  Future<void> cancel();
+  void cancel();
 }
 
 abstract class QuerySubscriber {

@@ -108,7 +108,7 @@ class ConvexClient {
   /// [onError] - Callback function called when an error occurs
   ///
   /// Returns a handle that can be used to manage the subscription
-  Future<WrappedSubscriptionHandle> subscribe({
+  Future<SubscriptionHandle> subscribe({
     required String name,
     required Map<String, String> args,
     required void Function(String) onUpdate,

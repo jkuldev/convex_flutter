@@ -389,16 +389,15 @@ fn wire__crate__MobileConvexClient_mutation_impl(
     )
 }
 fn wire__crate__MobileConvexClient_new_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "MobileConvexClient_new",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -413,15 +412,13 @@ fn wire__crate__MobileConvexClient_new_impl(
             let api_deployment_url = <String>::sse_decode(&mut deserializer);
             let api_client_id = <String>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let output_ok = Result::<_, ()>::Ok(crate::MobileConvexClient::new(
-                        api_deployment_url,
-                        api_client_id,
-                    ))?;
-                    Ok(output_ok)
-                })())
-            }
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Result::<_, ()>::Ok(crate::MobileConvexClient::new(
+                    api_deployment_url,
+                    api_client_id,
+                ))?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -615,16 +612,15 @@ fn wire__crate__MobileConvexClient_subscribe_impl(
     )
 }
 fn wire__crate__SubscriptionHandle_cancel_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "SubscriptionHandle_cancel",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -640,28 +636,26 @@ fn wire__crate__SubscriptionHandle_cancel_impl(
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SubscriptionHandle>,
             >>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let mut api_that_guard = None;
-                    let decode_indices_ =
-                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                &api_that, 0, false,
-                            ),
-                        ]);
-                    for i in decode_indices_ {
-                        match i {
-                            0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
-                            _ => unreachable!(),
-                        }
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
                     }
-                    let api_that_guard = api_that_guard.unwrap();
-                    let output_ok = Result::<_, ()>::Ok({
-                        crate::SubscriptionHandle::cancel(&*api_that_guard);
-                    })?;
-                    Ok(output_ok)
-                })())
-            }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    crate::SubscriptionHandle::cancel(&*api_that_guard);
+                })?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -994,11 +988,9 @@ fn pde_ffi_dispatcher_primary_impl(
         4 => wire__crate__CallbackSubscriber_on_update_impl(port, ptr, rust_vec_len, data_len),
         5 => wire__crate__MobileConvexClient_action_impl(port, ptr, rust_vec_len, data_len),
         6 => wire__crate__MobileConvexClient_mutation_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__MobileConvexClient_new_impl(port, ptr, rust_vec_len, data_len),
         8 => wire__crate__MobileConvexClient_query_impl(port, ptr, rust_vec_len, data_len),
         9 => wire__crate__MobileConvexClient_set_auth_impl(port, ptr, rust_vec_len, data_len),
         10 => wire__crate__MobileConvexClient_subscribe_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__SubscriptionHandle_cancel_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1011,6 +1003,8 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
+        7 => wire__crate__MobileConvexClient_new_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__SubscriptionHandle_cancel_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

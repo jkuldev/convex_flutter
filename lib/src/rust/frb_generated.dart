@@ -109,7 +109,7 @@ abstract class RustLibApi extends BaseApi {
     required Map<String, String> args,
   });
 
-  Future<MobileConvexClient> crateMobileConvexClientNew({
+  MobileConvexClient crateMobileConvexClientNew({
     required String deploymentUrl,
     required String clientId,
   });
@@ -133,9 +133,7 @@ abstract class RustLibApi extends BaseApi {
     required FutureOr<void> Function(String, String?) onError,
   });
 
-  Future<void> crateSubscriptionHandleCancel({
-    required SubscriptionHandle that,
-  });
+  void crateSubscriptionHandleCancel({required SubscriptionHandle that});
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_CallbackSubscriber;
@@ -419,22 +417,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<MobileConvexClient> crateMobileConvexClientNew({
+  MobileConvexClient crateMobileConvexClientNew({
     required String deploymentUrl,
     required String clientId,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(deploymentUrl, serializer);
           sse_encode_String(clientId, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 7,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -583,23 +576,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateSubscriptionHandleCancel({
-    required SubscriptionHandle that,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  void crateSubscriptionHandleCancel({required SubscriptionHandle that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSubscriptionHandle(
             that,
             serializer,
           );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 11,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -1708,6 +1694,6 @@ class SubscriptionHandleImpl extends RustOpaque implements SubscriptionHandle {
   );
 
   /// Cancels the subscription by sending a cancellation signal.
-  Future<void> cancel() =>
+  void cancel() =>
       RustLib.instance.api.crateSubscriptionHandleCancel(that: this);
 }
