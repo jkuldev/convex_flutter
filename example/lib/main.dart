@@ -21,7 +21,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   TextEditingController messageController = TextEditingController();
-  ArcSubscriptionHandle? subscriptionHandle;
+  SubscriptionHandle? subscriptionHandle;
   String currentUserId = "Flutter App"; // Replace with actual user ID
   List<Map<String, dynamic>> updates = [];
 
@@ -38,8 +38,9 @@ class _MyAppState extends State<MyApp> {
         args: {},
         onUpdate: (value) {
           final List<dynamic> jsonList = jsonDecode(value);
-          final List<Map<String, dynamic>> parsedValues =
-              jsonList.map((e) => e as Map<String, dynamic>).toList();
+          final List<Map<String, dynamic>> parsedValues = jsonList
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
           setState(() {
             updates = parsedValues;
           });
@@ -78,10 +79,9 @@ class _MyAppState extends State<MyApp> {
                     final bool isMyMessage = message['userId'] == currentUserId;
 
                     return Align(
-                      alignment:
-                          isMyMessage
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
+                      alignment: isMyMessage
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
@@ -89,17 +89,16 @@ class _MyAppState extends State<MyApp> {
                           maxWidth: MediaQuery.of(context).size.width * 0.7,
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              isMyMessage ? Colors.blue[100] : Colors.grey[200],
+                          color: isMyMessage
+                              ? Colors.blue[100]
+                              : Colors.grey[200],
                           borderRadius: BorderRadius.circular(12).copyWith(
-                            bottomRight:
-                                isMyMessage
-                                    ? Radius.zero
-                                    : const Radius.circular(12),
-                            bottomLeft:
-                                isMyMessage
-                                    ? const Radius.circular(12)
-                                    : Radius.zero,
+                            bottomRight: isMyMessage
+                                ? Radius.zero
+                                : const Radius.circular(12),
+                            bottomLeft: isMyMessage
+                                ? const Radius.circular(12)
+                                : Radius.zero,
                           ),
                         ),
                         child: Text(
