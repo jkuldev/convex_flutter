@@ -3,10 +3,10 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../frb_generated.dart';
+import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
-part 'simple.freezed.dart';
+part 'lib.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `connected_client`, `handle_direct_function_result`, `internal_action`, `internal_mutation`, `internal_set_auth`, `internal_subscribe`, `new`, `parse_json_args`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `from`
@@ -53,7 +53,7 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
   static Future<MobileConvexClient> newInstance({
     required String deploymentUrl,
     required String clientId,
-  }) => RustLib.instance.api.crateApiSimpleMobileConvexClientNew(
+  }) => RustLib.instance.api.crateMobileConvexClientNew(
     deploymentUrl: deploymentUrl,
     clientId: clientId,
   );
