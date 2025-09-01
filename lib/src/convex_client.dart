@@ -43,7 +43,7 @@ import 'package:convex_flutter/src/lib/utils.dart';
 /// );
 ///
 /// // Cancel subscription when done
-/// client.cancelSubscription(subscription);
+/// subscription.cancel();
 /// ```
 /// A client class for interacting with Convex backend services
 /// Implements singleton pattern to ensure only one instance exists
