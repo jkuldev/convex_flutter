@@ -56,10 +56,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   sendMessage(String message) async {
+    print("Sending message: $message");
     await ConvexClient.instance.mutation(
       name: "messages:send",
       args: {"body": message, "author": "Singh"},
     );
+    print("Message sent: $message");
   }
 
   @override
