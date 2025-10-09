@@ -25,8 +25,8 @@
 
 // Section: imports
 
-use crate::api::simple::QuerySubscriber;
-use crate::api::simple::*;
+use crate::QuerySubscriber;
+use crate::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use flutter_rust_bridge::for_generated::{transform_result_dco, Lifetimeable, Lockable};
 use flutter_rust_bridge::{Handler, IntoIntoDart};
@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1297452957;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 847317329;
 
 // Section: executor
 
@@ -47,7 +47,7 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
-fn wire__crate__api__simple__CallbackSubscriberDartFn_on_error_impl(
+fn wire__crate__CallbackSubscriberDartFn_on_error_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -92,7 +92,7 @@ fn wire__crate__api__simple__CallbackSubscriberDartFn_on_error_impl(
                     }
                     let api_that_guard = api_that_guard.unwrap();
                     let output_ok = Result::<_, ()>::Ok({
-                        crate::api::simple::CallbackSubscriberDartFn::on_error(
+                        crate::CallbackSubscriberDartFn::on_error(
                             &*api_that_guard,
                             api_message,
                             api_value,
@@ -104,7 +104,7 @@ fn wire__crate__api__simple__CallbackSubscriberDartFn_on_error_impl(
         },
     )
 }
-fn wire__crate__api__simple__CallbackSubscriberDartFn_on_update_impl(
+fn wire__crate__CallbackSubscriberDartFn_on_update_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -148,10 +148,7 @@ fn wire__crate__api__simple__CallbackSubscriberDartFn_on_update_impl(
                     }
                     let api_that_guard = api_that_guard.unwrap();
                     let output_ok = Result::<_, ()>::Ok({
-                        crate::api::simple::CallbackSubscriberDartFn::on_update(
-                            &*api_that_guard,
-                            api_value,
-                        );
+                        crate::CallbackSubscriberDartFn::on_update(&*api_that_guard, api_value);
                     })?;
                     Ok(output_ok)
                 })())
@@ -159,7 +156,7 @@ fn wire__crate__api__simple__CallbackSubscriberDartFn_on_update_impl(
         },
     )
 }
-fn wire__crate__api__simple__CallbackSubscriber_on_error_impl(
+fn wire__crate__CallbackSubscriber_on_error_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -204,7 +201,7 @@ fn wire__crate__api__simple__CallbackSubscriber_on_error_impl(
                     }
                     let api_that_guard = api_that_guard.unwrap();
                     let output_ok = Result::<_, ()>::Ok({
-                        crate::api::simple::CallbackSubscriber::on_error(
+                        crate::CallbackSubscriber::on_error(
                             &*api_that_guard,
                             api_message,
                             api_value,
@@ -216,7 +213,7 @@ fn wire__crate__api__simple__CallbackSubscriber_on_error_impl(
         },
     )
 }
-fn wire__crate__api__simple__CallbackSubscriber_on_update_impl(
+fn wire__crate__CallbackSubscriber_on_update_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -260,10 +257,7 @@ fn wire__crate__api__simple__CallbackSubscriber_on_update_impl(
                     }
                     let api_that_guard = api_that_guard.unwrap();
                     let output_ok = Result::<_, ()>::Ok({
-                        crate::api::simple::CallbackSubscriber::on_update(
-                            &*api_that_guard,
-                            api_value,
-                        );
+                        crate::CallbackSubscriber::on_update(&*api_that_guard, api_value);
                     })?;
                     Ok(output_ok)
                 })())
@@ -271,7 +265,7 @@ fn wire__crate__api__simple__CallbackSubscriber_on_update_impl(
         },
     )
 }
-fn wire__crate__api__simple__MobileConvexClient_action_impl(
+fn wire__crate__MobileConvexClient_action_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -301,7 +295,7 @@ fn wire__crate__api__simple__MobileConvexClient_action_impl(
                 <std::collections::HashMap<String, String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
-                transform_result_sse::<_, crate::api::simple::ClientError>(
+                transform_result_sse::<_, crate::ClientError>(
                     (move || async move {
                         let mut api_that_guard = None;
                         let decode_indices_ =
@@ -320,12 +314,9 @@ fn wire__crate__api__simple__MobileConvexClient_action_impl(
                             }
                         }
                         let api_that_guard = api_that_guard.unwrap();
-                        let output_ok = crate::api::simple::MobileConvexClient::action(
-                            &*api_that_guard,
-                            api_name,
-                            api_args,
-                        )
-                        .await?;
+                        let output_ok =
+                            crate::MobileConvexClient::action(&*api_that_guard, api_name, api_args)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -334,7 +325,7 @@ fn wire__crate__api__simple__MobileConvexClient_action_impl(
         },
     )
 }
-fn wire__crate__api__simple__MobileConvexClient_mutation_impl(
+fn wire__crate__MobileConvexClient_mutation_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -364,7 +355,7 @@ fn wire__crate__api__simple__MobileConvexClient_mutation_impl(
                 <std::collections::HashMap<String, String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
-                transform_result_sse::<_, crate::api::simple::ClientError>(
+                transform_result_sse::<_, crate::ClientError>(
                     (move || async move {
                         let mut api_that_guard = None;
                         let decode_indices_ =
@@ -383,7 +374,7 @@ fn wire__crate__api__simple__MobileConvexClient_mutation_impl(
                             }
                         }
                         let api_that_guard = api_that_guard.unwrap();
-                        let output_ok = crate::api::simple::MobileConvexClient::mutation(
+                        let output_ok = crate::MobileConvexClient::mutation(
                             &*api_that_guard,
                             api_name,
                             api_args,
@@ -397,17 +388,16 @@ fn wire__crate__api__simple__MobileConvexClient_mutation_impl(
         },
     )
 }
-fn wire__crate__api__simple__MobileConvexClient_new_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
+fn wire__crate__MobileConvexClient_new_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "MobileConvexClient_new",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -422,20 +412,17 @@ fn wire__crate__api__simple__MobileConvexClient_new_impl(
             let api_deployment_url = <String>::sse_decode(&mut deserializer);
             let api_client_id = <String>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let output_ok =
-                        Result::<_, ()>::Ok(crate::api::simple::MobileConvexClient::new(
-                            api_deployment_url,
-                            api_client_id,
-                        ))?;
-                    Ok(output_ok)
-                })())
-            }
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Result::<_, ()>::Ok(crate::MobileConvexClient::new(
+                    api_deployment_url,
+                    api_client_id,
+                ))?;
+                Ok(output_ok)
+            })())
         },
     )
 }
-fn wire__crate__api__simple__MobileConvexClient_query_impl(
+fn wire__crate__MobileConvexClient_query_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -465,7 +452,7 @@ fn wire__crate__api__simple__MobileConvexClient_query_impl(
                 <std::collections::HashMap<String, String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
-                transform_result_sse::<_, crate::api::simple::ClientError>(
+                transform_result_sse::<_, crate::ClientError>(
                     (move || async move {
                         let mut api_that_guard = None;
                         let decode_indices_ =
@@ -484,12 +471,9 @@ fn wire__crate__api__simple__MobileConvexClient_query_impl(
                             }
                         }
                         let api_that_guard = api_that_guard.unwrap();
-                        let output_ok = crate::api::simple::MobileConvexClient::query(
-                            &*api_that_guard,
-                            api_name,
-                            api_args,
-                        )
-                        .await?;
+                        let output_ok =
+                            crate::MobileConvexClient::query(&*api_that_guard, api_name, api_args)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -498,7 +482,7 @@ fn wire__crate__api__simple__MobileConvexClient_query_impl(
         },
     )
 }
-fn wire__crate__api__simple__MobileConvexClient_set_auth_impl(
+fn wire__crate__MobileConvexClient_set_auth_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -526,7 +510,7 @@ fn wire__crate__api__simple__MobileConvexClient_set_auth_impl(
             let api_token = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
-                transform_result_sse::<_, crate::api::simple::ClientError>(
+                transform_result_sse::<_, crate::ClientError>(
                     (move || async move {
                         let mut api_that_guard = None;
                         let decode_indices_ =
@@ -545,11 +529,9 @@ fn wire__crate__api__simple__MobileConvexClient_set_auth_impl(
                             }
                         }
                         let api_that_guard = api_that_guard.unwrap();
-                        let output_ok = crate::api::simple::MobileConvexClient::set_auth(
-                            &*api_that_guard,
-                            api_token,
-                        )
-                        .await?;
+                        let output_ok =
+                            crate::MobileConvexClient::set_auth(&*api_that_guard, api_token)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -558,7 +540,7 @@ fn wire__crate__api__simple__MobileConvexClient_set_auth_impl(
         },
     )
 }
-fn wire__crate__api__simple__MobileConvexClient_subscribe_impl(
+fn wire__crate__MobileConvexClient_subscribe_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -594,7 +576,7 @@ fn wire__crate__api__simple__MobileConvexClient_subscribe_impl(
             );
             deserializer.end();
             move |context| async move {
-                transform_result_sse::<_, crate::api::simple::ClientError>(
+                transform_result_sse::<_, crate::ClientError>(
                     (move || async move {
                         let mut api_that_guard = None;
                         let decode_indices_ =
@@ -613,7 +595,7 @@ fn wire__crate__api__simple__MobileConvexClient_subscribe_impl(
                             }
                         }
                         let api_that_guard = api_that_guard.unwrap();
-                        let output_ok = crate::api::simple::MobileConvexClient::subscribe(
+                        let output_ok = crate::MobileConvexClient::subscribe(
                             &*api_that_guard,
                             api_name,
                             api_args,
@@ -629,17 +611,16 @@ fn wire__crate__api__simple__MobileConvexClient_subscribe_impl(
         },
     )
 }
-fn wire__crate__api__simple__SubscriptionHandle_cancel_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
+fn wire__crate__SubscriptionHandle_cancel_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "SubscriptionHandle_cancel",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -655,28 +636,26 @@ fn wire__crate__api__simple__SubscriptionHandle_cancel_impl(
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SubscriptionHandle>,
             >>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let mut api_that_guard = None;
-                    let decode_indices_ =
-                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                &api_that, 0, false,
-                            ),
-                        ]);
-                    for i in decode_indices_ {
-                        match i {
-                            0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
-                            _ => unreachable!(),
-                        }
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
                     }
-                    let api_that_guard = api_that_guard.unwrap();
-                    let output_ok = Result::<_, ()>::Ok({
-                        crate::api::simple::SubscriptionHandle::cancel(&*api_that_guard);
-                    })?;
-                    Ok(output_ok)
-                })())
-            }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    crate::SubscriptionHandle::cancel(&*api_that_guard);
+                })?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -756,9 +735,6 @@ fn decode_DartFn_Inputs_String_opt_String_Output_unit_AnyhowException(
     }
 }
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
-    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<SubscriptionHandle>>
-);
-flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CallbackSubscriber>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
@@ -778,16 +754,6 @@ impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <String>::sse_decode(deserializer);
         return flutter_rust_bridge::for_generated::anyhow::anyhow!("{}", inner);
-    }
-}
-
-impl SseDecode for Arc<SubscriptionHandle> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <RustOpaqueMoi<
-            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<SubscriptionHandle>>,
-        >>::sse_decode(deserializer);
-        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
     }
 }
 
@@ -848,18 +814,6 @@ impl SseDecode for std::collections::HashMap<String, String> {
 }
 
 impl SseDecode
-    for RustOpaqueMoi<
-        flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<SubscriptionHandle>>,
-    >
-{
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <usize>::sse_decode(deserializer);
-        return decode_rust_opaque_moi(inner);
-    }
-}
-
-impl SseDecode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CallbackSubscriber>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -909,22 +863,22 @@ impl SseDecode for String {
     }
 }
 
-impl SseDecode for crate::api::simple::ClientError {
+impl SseDecode for crate::ClientError {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut tag_ = <i32>::sse_decode(deserializer);
         match tag_ {
             0 => {
                 let mut var_msg = <String>::sse_decode(deserializer);
-                return crate::api::simple::ClientError::InternalError { msg: var_msg };
+                return crate::ClientError::InternalError { msg: var_msg };
             }
             1 => {
                 let mut var_data = <String>::sse_decode(deserializer);
-                return crate::api::simple::ClientError::ConvexError { data: var_data };
+                return crate::ClientError::ConvexError { data: var_data };
             }
             2 => {
                 let mut var_msg = <String>::sse_decode(deserializer);
-                return crate::api::simple::ClientError::ServerError { msg: var_msg };
+                return crate::ClientError::ServerError { msg: var_msg };
             }
             _ => {
                 unimplemented!("");
@@ -1026,69 +980,17 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        1 => wire__crate__api__simple__CallbackSubscriberDartFn_on_error_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        2 => wire__crate__api__simple__CallbackSubscriberDartFn_on_update_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        3 => wire__crate__api__simple__CallbackSubscriber_on_error_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        4 => wire__crate__api__simple__CallbackSubscriber_on_update_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        5 => wire__crate__api__simple__MobileConvexClient_action_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        6 => wire__crate__api__simple__MobileConvexClient_mutation_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        7 => {
-            wire__crate__api__simple__MobileConvexClient_new_impl(port, ptr, rust_vec_len, data_len)
+        1 => wire__crate__CallbackSubscriberDartFn_on_error_impl(port, ptr, rust_vec_len, data_len),
+        2 => {
+            wire__crate__CallbackSubscriberDartFn_on_update_impl(port, ptr, rust_vec_len, data_len)
         }
-        8 => wire__crate__api__simple__MobileConvexClient_query_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        9 => wire__crate__api__simple__MobileConvexClient_set_auth_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        10 => wire__crate__api__simple__MobileConvexClient_subscribe_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        11 => wire__crate__api__simple__SubscriptionHandle_cancel_impl(
-            port,
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
+        3 => wire__crate__CallbackSubscriber_on_error_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__CallbackSubscriber_on_update_impl(port, ptr, rust_vec_len, data_len),
+        5 => wire__crate__MobileConvexClient_action_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__MobileConvexClient_mutation_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__MobileConvexClient_query_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__MobileConvexClient_set_auth_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__MobileConvexClient_subscribe_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1101,31 +1003,13 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
+        7 => wire__crate__MobileConvexClient_new_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__SubscriptionHandle_cancel_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
 
 // Section: rust2dart
-
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for FrbWrapper<Arc<SubscriptionHandle>> {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
-            .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for FrbWrapper<Arc<SubscriptionHandle>>
-{
-}
-
-impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Arc<SubscriptionHandle>>>
-    for Arc<SubscriptionHandle>
-{
-    fn into_into_dart(self) -> FrbWrapper<Arc<SubscriptionHandle>> {
-        self.into()
-    }
-}
 
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<CallbackSubscriber> {
@@ -1202,16 +1086,16 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<SubscriptionHandle>> for Subsc
 }
 
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::simple::ClientError {
+impl flutter_rust_bridge::IntoDart for crate::ClientError {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            crate::api::simple::ClientError::InternalError { msg } => {
+            crate::ClientError::InternalError { msg } => {
                 [0.into_dart(), msg.into_into_dart().into_dart()].into_dart()
             }
-            crate::api::simple::ClientError::ConvexError { data } => {
+            crate::ClientError::ConvexError { data } => {
                 [1.into_dart(), data.into_into_dart().into_dart()].into_dart()
             }
-            crate::api::simple::ClientError::ServerError { msg } => {
+            crate::ClientError::ServerError { msg } => {
                 [2.into_dart(), msg.into_into_dart().into_dart()].into_dart()
             }
             _ => {
@@ -1220,14 +1104,9 @@ impl flutter_rust_bridge::IntoDart for crate::api::simple::ClientError {
         }
     }
 }
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::api::simple::ClientError
-{
-}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::simple::ClientError>
-    for crate::api::simple::ClientError
-{
-    fn into_into_dart(self) -> crate::api::simple::ClientError {
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::ClientError {}
+impl flutter_rust_bridge::IntoIntoDart<crate::ClientError> for crate::ClientError {
+    fn into_into_dart(self) -> crate::ClientError {
         self
     }
 }
@@ -1236,18 +1115,6 @@ impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(format!("{:?}", self), serializer);
-    }
-}
-
-impl SseEncode for Arc<SubscriptionHandle> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <RustOpaqueMoi<
-            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<SubscriptionHandle>>,
-        >>::sse_encode(
-            flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self),
-            serializer,
-        );
     }
 }
 
@@ -1295,19 +1162,6 @@ impl SseEncode for std::collections::HashMap<String, String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<(String, String)>>::sse_encode(self.into_iter().collect(), serializer);
-    }
-}
-
-impl SseEncode
-    for RustOpaqueMoi<
-        flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<SubscriptionHandle>>,
-    >
-{
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        let (ptr, size) = self.sse_encode_raw();
-        <usize>::sse_encode(ptr, serializer);
-        <i32>::sse_encode(size, serializer);
     }
 }
 
@@ -1364,19 +1218,19 @@ impl SseEncode for String {
     }
 }
 
-impl SseEncode for crate::api::simple::ClientError {
+impl SseEncode for crate::ClientError {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         match self {
-            crate::api::simple::ClientError::InternalError { msg } => {
+            crate::ClientError::InternalError { msg } => {
                 <i32>::sse_encode(0, serializer);
                 <String>::sse_encode(msg, serializer);
             }
-            crate::api::simple::ClientError::ConvexError { data } => {
+            crate::ClientError::ConvexError { data } => {
                 <i32>::sse_encode(1, serializer);
                 <String>::sse_encode(data, serializer);
             }
-            crate::api::simple::ClientError::ServerError { msg } => {
+            crate::ClientError::ServerError { msg } => {
                 <i32>::sse_encode(2, serializer);
                 <String>::sse_encode(msg, serializer);
             }
@@ -1479,8 +1333,8 @@ mod io {
     // Section: imports
 
     use super::*;
-    use crate::api::simple::QuerySubscriber;
-    use crate::api::simple::*;
+    use crate::QuerySubscriber;
+    use crate::*;
     use flutter_rust_bridge::for_generated::byteorder::{
         NativeEndian, ReadBytesExt, WriteBytesExt,
     };
@@ -1490,20 +1344,6 @@ mod io {
     // Section: boilerplate
 
     flutter_rust_bridge::frb_generated_boilerplate_io!();
-
-    #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_convex_flutter_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < SubscriptionHandle >>>::increment_strong_count(ptr as _);
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_convex_flutter_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < SubscriptionHandle >>>::decrement_strong_count(ptr as _);
-    }
 
     #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_convex_flutter_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber(
@@ -1573,8 +1413,8 @@ mod web {
     // Section: imports
 
     use super::*;
-    use crate::api::simple::QuerySubscriber;
-    use crate::api::simple::*;
+    use crate::QuerySubscriber;
+    use crate::*;
     use flutter_rust_bridge::for_generated::byteorder::{
         NativeEndian, ReadBytesExt, WriteBytesExt,
     };
@@ -1586,20 +1426,6 @@ mod web {
     // Section: boilerplate
 
     flutter_rust_bridge::frb_generated_boilerplate_web!();
-
-    #[wasm_bindgen]
-    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < SubscriptionHandle >>>::increment_strong_count(ptr as _);
-    }
-
-    #[wasm_bindgen]
-    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < SubscriptionHandle >>>::decrement_strong_count(ptr as _);
-    }
 
     #[wasm_bindgen]
     pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber(

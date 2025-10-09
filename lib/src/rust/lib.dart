@@ -3,16 +3,13 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
-import '../frb_generated.dart';
+import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
-part 'simple.freezed.dart';
+part 'lib.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `connected_client`, `handle_direct_function_result`, `internal_action`, `internal_mutation`, `internal_set_auth`, `internal_subscribe`, `new`, `parse_json_args`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `from`
-
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < SubscriptionHandle >>>
-abstract class ArcSubscriptionHandle implements RustOpaqueInterface {}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CallbackSubscriber>>
 abstract class CallbackSubscriber
@@ -48,12 +45,11 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
     required Map<String, String> args,
   });
 
-  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
   /// Creates a new MobileConvexClient instance with the given deployment URL and client ID.
-  static Future<MobileConvexClient> newInstance({
+  factory MobileConvexClient({
     required String deploymentUrl,
     required String clientId,
-  }) => RustLib.instance.api.crateApiSimpleMobileConvexClientNew(
+  }) => RustLib.instance.api.crateMobileConvexClientNew(
     deploymentUrl: deploymentUrl,
     clientId: clientId,
   );
@@ -68,7 +64,7 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
   Future<void> setAuth({String? token});
 
   /// Subscribes to real-time updates from a Convex query.
-  Future<ArcSubscriptionHandle> subscribe({
+  Future<SubscriptionHandle> subscribe({
     required String name,
     required Map<String, String> args,
     required FutureOr<void> Function(String) onUpdate,
@@ -79,7 +75,7 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SubscriptionHandle>>
 abstract class SubscriptionHandle implements RustOpaqueInterface {
   /// Cancels the subscription by sending a cancellation signal.
-  Future<void> cancel();
+  void cancel();
 }
 
 abstract class QuerySubscriber {

@@ -3,12 +3,12 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'api/simple.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
 import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
+import 'lib.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 /// Main entrypoint of the Rust API
@@ -64,7 +64,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => -1297452957;
+  int get rustContentHash => 847317329;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -75,57 +75,57 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<void> crateApiSimpleCallbackSubscriberDartFnOnError({
+  Future<void> crateCallbackSubscriberDartFnOnError({
     required CallbackSubscriberDartFn that,
     required String message,
     String? value,
   });
 
-  Future<void> crateApiSimpleCallbackSubscriberDartFnOnUpdate({
+  Future<void> crateCallbackSubscriberDartFnOnUpdate({
     required CallbackSubscriberDartFn that,
     required String value,
   });
 
-  Future<void> crateApiSimpleCallbackSubscriberOnError({
+  Future<void> crateCallbackSubscriberOnError({
     required CallbackSubscriber that,
     required String message,
     String? value,
   });
 
-  Future<void> crateApiSimpleCallbackSubscriberOnUpdate({
+  Future<void> crateCallbackSubscriberOnUpdate({
     required CallbackSubscriber that,
     required String value,
   });
 
-  Future<String> crateApiSimpleMobileConvexClientAction({
+  Future<String> crateMobileConvexClientAction({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
   });
 
-  Future<String> crateApiSimpleMobileConvexClientMutation({
+  Future<String> crateMobileConvexClientMutation({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
   });
 
-  Future<MobileConvexClient> crateApiSimpleMobileConvexClientNew({
+  MobileConvexClient crateMobileConvexClientNew({
     required String deploymentUrl,
     required String clientId,
   });
 
-  Future<String> crateApiSimpleMobileConvexClientQuery({
+  Future<String> crateMobileConvexClientQuery({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
   });
 
-  Future<void> crateApiSimpleMobileConvexClientSetAuth({
+  Future<void> crateMobileConvexClientSetAuth({
     required MobileConvexClient that,
     String? token,
   });
 
-  Future<ArcSubscriptionHandle> crateApiSimpleMobileConvexClientSubscribe({
+  Future<SubscriptionHandle> crateMobileConvexClientSubscribe({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -133,18 +133,7 @@ abstract class RustLibApi extends BaseApi {
     required FutureOr<void> Function(String, String?) onError,
   });
 
-  Future<void> crateApiSimpleSubscriptionHandleCancel({
-    required SubscriptionHandle that,
-  });
-
-  RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_ArcSubscriptionHandle;
-
-  RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_ArcSubscriptionHandle;
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_ArcSubscriptionHandlePtr;
+  void crateSubscriptionHandleCancel({required SubscriptionHandle that});
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_CallbackSubscriber;
@@ -192,7 +181,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<void> crateApiSimpleCallbackSubscriberDartFnOnError({
+  Future<void> crateCallbackSubscriberDartFnOnError({
     required CallbackSubscriberDartFn that,
     required String message,
     String? value,
@@ -218,21 +207,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleCallbackSubscriberDartFnOnErrorConstMeta,
+        constMeta: kCrateCallbackSubscriberDartFnOnErrorConstMeta,
         argValues: [that, message, value],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleCallbackSubscriberDartFnOnErrorConstMeta =>
+  TaskConstMeta get kCrateCallbackSubscriberDartFnOnErrorConstMeta =>
       const TaskConstMeta(
         debugName: "CallbackSubscriberDartFn_on_error",
         argNames: ["that", "message", "value"],
       );
 
   @override
-  Future<void> crateApiSimpleCallbackSubscriberDartFnOnUpdate({
+  Future<void> crateCallbackSubscriberDartFnOnUpdate({
     required CallbackSubscriberDartFn that,
     required String value,
   }) {
@@ -256,21 +245,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleCallbackSubscriberDartFnOnUpdateConstMeta,
+        constMeta: kCrateCallbackSubscriberDartFnOnUpdateConstMeta,
         argValues: [that, value],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleCallbackSubscriberDartFnOnUpdateConstMeta =>
+  TaskConstMeta get kCrateCallbackSubscriberDartFnOnUpdateConstMeta =>
       const TaskConstMeta(
         debugName: "CallbackSubscriberDartFn_on_update",
         argNames: ["that", "value"],
       );
 
   @override
-  Future<void> crateApiSimpleCallbackSubscriberOnError({
+  Future<void> crateCallbackSubscriberOnError({
     required CallbackSubscriber that,
     required String message,
     String? value,
@@ -296,21 +285,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleCallbackSubscriberOnErrorConstMeta,
+        constMeta: kCrateCallbackSubscriberOnErrorConstMeta,
         argValues: [that, message, value],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleCallbackSubscriberOnErrorConstMeta =>
+  TaskConstMeta get kCrateCallbackSubscriberOnErrorConstMeta =>
       const TaskConstMeta(
         debugName: "CallbackSubscriber_on_error",
         argNames: ["that", "message", "value"],
       );
 
   @override
-  Future<void> crateApiSimpleCallbackSubscriberOnUpdate({
+  Future<void> crateCallbackSubscriberOnUpdate({
     required CallbackSubscriber that,
     required String value,
   }) {
@@ -334,21 +323,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleCallbackSubscriberOnUpdateConstMeta,
+        constMeta: kCrateCallbackSubscriberOnUpdateConstMeta,
         argValues: [that, value],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleCallbackSubscriberOnUpdateConstMeta =>
+  TaskConstMeta get kCrateCallbackSubscriberOnUpdateConstMeta =>
       const TaskConstMeta(
         debugName: "CallbackSubscriber_on_update",
         argNames: ["that", "value"],
       );
 
   @override
-  Future<String> crateApiSimpleMobileConvexClientAction({
+  Future<String> crateMobileConvexClientAction({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -374,21 +363,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_client_error,
         ),
-        constMeta: kCrateApiSimpleMobileConvexClientActionConstMeta,
+        constMeta: kCrateMobileConvexClientActionConstMeta,
         argValues: [that, name, args],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleMobileConvexClientActionConstMeta =>
+  TaskConstMeta get kCrateMobileConvexClientActionConstMeta =>
       const TaskConstMeta(
         debugName: "MobileConvexClient_action",
         argNames: ["that", "name", "args"],
       );
 
   @override
-  Future<String> crateApiSimpleMobileConvexClientMutation({
+  Future<String> crateMobileConvexClientMutation({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -414,57 +403,51 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_client_error,
         ),
-        constMeta: kCrateApiSimpleMobileConvexClientMutationConstMeta,
+        constMeta: kCrateMobileConvexClientMutationConstMeta,
         argValues: [that, name, args],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleMobileConvexClientMutationConstMeta =>
+  TaskConstMeta get kCrateMobileConvexClientMutationConstMeta =>
       const TaskConstMeta(
         debugName: "MobileConvexClient_mutation",
         argNames: ["that", "name", "args"],
       );
 
   @override
-  Future<MobileConvexClient> crateApiSimpleMobileConvexClientNew({
+  MobileConvexClient crateMobileConvexClientNew({
     required String deploymentUrl,
     required String clientId,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(deploymentUrl, serializer);
           sse_encode_String(clientId, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 7,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7)!;
         },
         codec: SseCodec(
           decodeSuccessData:
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMobileConvexClient,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleMobileConvexClientNewConstMeta,
+        constMeta: kCrateMobileConvexClientNewConstMeta,
         argValues: [deploymentUrl, clientId],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleMobileConvexClientNewConstMeta =>
-      const TaskConstMeta(
-        debugName: "MobileConvexClient_new",
-        argNames: ["deploymentUrl", "clientId"],
-      );
+  TaskConstMeta get kCrateMobileConvexClientNewConstMeta => const TaskConstMeta(
+    debugName: "MobileConvexClient_new",
+    argNames: ["deploymentUrl", "clientId"],
+  );
 
   @override
-  Future<String> crateApiSimpleMobileConvexClientQuery({
+  Future<String> crateMobileConvexClientQuery({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -490,21 +473,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_client_error,
         ),
-        constMeta: kCrateApiSimpleMobileConvexClientQueryConstMeta,
+        constMeta: kCrateMobileConvexClientQueryConstMeta,
         argValues: [that, name, args],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleMobileConvexClientQueryConstMeta =>
+  TaskConstMeta get kCrateMobileConvexClientQueryConstMeta =>
       const TaskConstMeta(
         debugName: "MobileConvexClient_query",
         argNames: ["that", "name", "args"],
       );
 
   @override
-  Future<void> crateApiSimpleMobileConvexClientSetAuth({
+  Future<void> crateMobileConvexClientSetAuth({
     required MobileConvexClient that,
     String? token,
   }) {
@@ -528,21 +511,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_client_error,
         ),
-        constMeta: kCrateApiSimpleMobileConvexClientSetAuthConstMeta,
+        constMeta: kCrateMobileConvexClientSetAuthConstMeta,
         argValues: [that, token],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleMobileConvexClientSetAuthConstMeta =>
+  TaskConstMeta get kCrateMobileConvexClientSetAuthConstMeta =>
       const TaskConstMeta(
         debugName: "MobileConvexClient_set_auth",
         argNames: ["that", "token"],
       );
 
   @override
-  Future<ArcSubscriptionHandle> crateApiSimpleMobileConvexClientSubscribe({
+  Future<SubscriptionHandle> crateMobileConvexClientSubscribe({
     required MobileConvexClient that,
     required String name,
     required Map<String, String> args,
@@ -576,53 +559,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         },
         codec: SseCodec(
           decodeSuccessData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle,
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSubscriptionHandle,
           decodeErrorData: sse_decode_client_error,
         ),
-        constMeta: kCrateApiSimpleMobileConvexClientSubscribeConstMeta,
+        constMeta: kCrateMobileConvexClientSubscribeConstMeta,
         argValues: [that, name, args, onUpdate, onError],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleMobileConvexClientSubscribeConstMeta =>
+  TaskConstMeta get kCrateMobileConvexClientSubscribeConstMeta =>
       const TaskConstMeta(
         debugName: "MobileConvexClient_subscribe",
         argNames: ["that", "name", "args", "onUpdate", "onError"],
       );
 
   @override
-  Future<void> crateApiSimpleSubscriptionHandleCancel({
-    required SubscriptionHandle that,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  void crateSubscriptionHandleCancel({required SubscriptionHandle that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSubscriptionHandle(
             that,
             serializer,
           );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 11,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleSubscriptionHandleCancelConstMeta,
+        constMeta: kCrateSubscriptionHandleCancelConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleSubscriptionHandleCancelConstMeta =>
+  TaskConstMeta get kCrateSubscriptionHandleCancelConstMeta =>
       const TaskConstMeta(
         debugName: "SubscriptionHandle_cancel",
         argNames: ["that"],
@@ -700,14 +676,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_ArcSubscriptionHandle => wire
-      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle;
-
-  RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_ArcSubscriptionHandle => wire
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle;
-
-  RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_CallbackSubscriber => wire
       .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber;
 
@@ -743,15 +711,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return AnyhowException(raw as String);
-  }
-
-  @protected
-  ArcSubscriptionHandle
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -860,15 +819,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         raw,
       ).map((e) => MapEntry(e.$1, e.$2)),
     );
-  }
-
-  @protected
-  ArcSubscriptionHandle
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -996,18 +946,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  ArcSubscriptionHandle
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
-  }
-
-  @protected
   CallbackSubscriber
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber(
     SseDeserializer deserializer,
@@ -1117,18 +1055,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_record_string_string(deserializer);
     return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
-  }
-
-  @protected
-  ArcSubscriptionHandle
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ArcSubscriptionHandleImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
   }
 
   @protected
@@ -1294,19 +1220,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    ArcSubscriptionHandle self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as ArcSubscriptionHandleImpl).frbInternalSseEncode(move: true),
-      serializer,
-    );
-  }
-
-  @protected
-  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCallbackSubscriber(
     CallbackSubscriber self,
     SseSerializer serializer,
@@ -1456,19 +1369,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_record_string_string(
       self.entries.map((e) => (e.key, e.value)).toList(),
-      serializer,
-    );
-  }
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcSubscriptionHandle(
-    ArcSubscriptionHandle self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as ArcSubscriptionHandleImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -1626,35 +1526,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 }
 
 @sealed
-class ArcSubscriptionHandleImpl extends RustOpaque
-    implements ArcSubscriptionHandle {
-  // Not to be used by end users
-  ArcSubscriptionHandleImpl.frbInternalDcoDecode(List<dynamic> wire)
-    : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  ArcSubscriptionHandleImpl.frbInternalSseDecode(
-    BigInt ptr,
-    int externalSizeOnNative,
-  ) : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount: RustLib
-        .instance
-        .api
-        .rust_arc_increment_strong_count_ArcSubscriptionHandle,
-    rustArcDecrementStrongCount: RustLib
-        .instance
-        .api
-        .rust_arc_decrement_strong_count_ArcSubscriptionHandle,
-    rustArcDecrementStrongCountPtr: RustLib
-        .instance
-        .api
-        .rust_arc_decrement_strong_count_ArcSubscriptionHandlePtr,
-  );
-}
-
-@sealed
 class CallbackSubscriberDartFnImpl extends RustOpaque
     implements CallbackSubscriberDartFn {
   // Not to be used by end users
@@ -1683,14 +1554,14 @@ class CallbackSubscriberDartFnImpl extends RustOpaque
   );
 
   Future<void> onError({required String message, String? value}) =>
-      RustLib.instance.api.crateApiSimpleCallbackSubscriberDartFnOnError(
+      RustLib.instance.api.crateCallbackSubscriberDartFnOnError(
         that: this,
         message: message,
         value: value,
       );
 
   Future<void> onUpdate({required String value}) => RustLib.instance.api
-      .crateApiSimpleCallbackSubscriberDartFnOnUpdate(that: this, value: value);
+      .crateCallbackSubscriberDartFnOnUpdate(that: this, value: value);
 }
 
 @sealed
@@ -1717,14 +1588,14 @@ class CallbackSubscriberImpl extends RustOpaque implements CallbackSubscriber {
   );
 
   Future<void> onError({required String message, String? value}) =>
-      RustLib.instance.api.crateApiSimpleCallbackSubscriberOnError(
+      RustLib.instance.api.crateCallbackSubscriberOnError(
         that: this,
         message: message,
         value: value,
       );
 
   Future<void> onUpdate({required String value}) => RustLib.instance.api
-      .crateApiSimpleCallbackSubscriberOnUpdate(that: this, value: value);
+      .crateCallbackSubscriberOnUpdate(that: this, value: value);
 }
 
 @sealed
@@ -1754,7 +1625,7 @@ class MobileConvexClientImpl extends RustOpaque implements MobileConvexClient {
   Future<String> action({
     required String name,
     required Map<String, String> args,
-  }) => RustLib.instance.api.crateApiSimpleMobileConvexClientAction(
+  }) => RustLib.instance.api.crateMobileConvexClientAction(
     that: this,
     name: name,
     args: args,
@@ -1764,7 +1635,7 @@ class MobileConvexClientImpl extends RustOpaque implements MobileConvexClient {
   Future<String> mutation({
     required String name,
     required Map<String, String> args,
-  }) => RustLib.instance.api.crateApiSimpleMobileConvexClientMutation(
+  }) => RustLib.instance.api.crateMobileConvexClientMutation(
     that: this,
     name: name,
     args: args,
@@ -1774,7 +1645,7 @@ class MobileConvexClientImpl extends RustOpaque implements MobileConvexClient {
   Future<String> query({
     required String name,
     required Map<String, String> args,
-  }) => RustLib.instance.api.crateApiSimpleMobileConvexClientQuery(
+  }) => RustLib.instance.api.crateMobileConvexClientQuery(
     that: this,
     name: name,
     args: args,
@@ -1782,15 +1653,15 @@ class MobileConvexClientImpl extends RustOpaque implements MobileConvexClient {
 
   /// Sets authentication token for the client.
   Future<void> setAuth({String? token}) => RustLib.instance.api
-      .crateApiSimpleMobileConvexClientSetAuth(that: this, token: token);
+      .crateMobileConvexClientSetAuth(that: this, token: token);
 
   /// Subscribes to real-time updates from a Convex query.
-  Future<ArcSubscriptionHandle> subscribe({
+  Future<SubscriptionHandle> subscribe({
     required String name,
     required Map<String, String> args,
     required FutureOr<void> Function(String) onUpdate,
     required FutureOr<void> Function(String, String?) onError,
-  }) => RustLib.instance.api.crateApiSimpleMobileConvexClientSubscribe(
+  }) => RustLib.instance.api.crateMobileConvexClientSubscribe(
     that: this,
     name: name,
     args: args,
@@ -1823,6 +1694,6 @@ class SubscriptionHandleImpl extends RustOpaque implements SubscriptionHandle {
   );
 
   /// Cancels the subscription by sending a cancellation signal.
-  Future<void> cancel() =>
-      RustLib.instance.api.crateApiSimpleSubscriptionHandleCancel(that: this);
+  void cancel() =>
+      RustLib.instance.api.crateSubscriptionHandleCancel(that: this);
 }

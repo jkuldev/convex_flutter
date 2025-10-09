@@ -19,3 +19,7 @@
 ## 1.2.0
 
  - Package version updated
+
+## 2.0.0
+
+- Replaced ArcSubscriptionHandle with SubscriptionHandle

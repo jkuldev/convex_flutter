@@ -1,91 +1,104 @@
 # convex_flutter
 
-A new Flutter FFI plugin project.
+A Flutter plugin for integrating with the Convex backend. It provides a simple Dart API over the Convex Rust core to run queries, mutations, and actions, and to subscribe to real-time updates.
 
-## Getting Started
+This package wraps the [Convex Rust library](https://github.com/get-convex/convex-rs) and exposes a Flutter-friendly interface.
 
-This project is a starting point for a Flutter
-[FFI plugin](https://flutter.dev/to/ffi-package),
-a specialized package that includes native code directly invoked with Dart FFI.
+## Features
 
-## Project structure
+- Real-time subscriptions to Convex queries
+- Simple Dart API for queries, mutations, and actions
+- Authentication token support via `setAuth`
+- Works on Android, iOS, macOS, Windows, and Linux (FFI)
 
-This template uses the following structure:
+## Installation
 
-* `src`: Contains the native source code, and a CmakeFile.txt file for building
-  that source code into a dynamic library.
-
-* `lib`: Contains the Dart code that defines the API of the plugin, and which
-  calls into the native code using `dart:ffi`.
-
-* platform folders (`android`, `ios`, `windows`, etc.): Contains the build files
-  for building and bundling the native code library with the platform application.
-
-## Building and bundling native code
-
-The `pubspec.yaml` specifies FFI plugins as follows:
-
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        ffiPlugin: true
+```
+flutter pub add convex_flutter
 ```
 
-This configuration invokes the native build for the various target platforms
-and bundles the binaries in Flutter applications using these FFI plugins.
+## Requirements
 
-This can be combined with dartPluginClass, such as when FFI is used for the
-implementation of one platform in a federated plugin:
+- Dart SDK ≥ 3.8.1 and Flutter ≥ 3.3.0
+- A working Rust toolchain (rustup + cargo) to build native code
+- Platform toolchains:
+  - Android: JDK 11 and Android SDK/NDK
+  - iOS/macOS: Xcode and CocoaPods
+  - Windows: Visual Studio Build Tools (C++)
+  - Linux: clang, pkg-config, and build essentials
 
-```yaml
-  plugin:
-    implements: some_other_plugin
-    platforms:
-      some_platform:
-        dartPluginClass: SomeClass
-        ffiPlugin: true
+## Quick start
+
+```dart
+import 'package:convex_flutter/convex_flutter.dart';
+
+Future<void> main() async {
+  // Initialize the client once (singleton)
+  final client = await ConvexClient.init(
+    deploymentUrl: 'https://my-app.convex.cloud',
+    clientId: 'flutter-app-1.0',
+  );
+
+  // Optional: authenticate
+  await client.setAuth(token: 'YOUR_AUTH_TOKEN');
+
+  // Query
+  final users = await client.query('users:list', {'limit': '10'});
+  print('Users: $users');
+
+  // Subscribe to real-time updates
+  final sub = await client.subscribe(
+    name: 'messages:list',
+    args: {},
+    onUpdate: (value) => print('Update: $value'),
+    onError: (message, value) => print('Error: $message ${value ?? ''}'),
+  );
+
+  // Mutation
+  await client.mutation(
+    name: 'messages:send',
+    args: {'body': 'Hello!', 'author': 'User123'},
+  );
+
+  // Action (if you have actions defined)
+  // final res = await client.action(name: 'files:upload', args: {...});
+
+  // Later, when done
+  sub.cancel();
+}
 ```
 
-A plugin can have both FFI and method channels:
+## API overview
 
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        pluginClass: SomeName
-        ffiPlugin: true
+- `ConvexClient.init({ deploymentUrl, clientId })` → initializes a singleton client
+- `query(String name, Map<String, String> args)` → runs a query
+- `mutation({ required String name, required Map<String, dynamic> args })` → runs a mutation
+- `action({ required String name, required Map<String, dynamic> args })` → runs an action
+- `subscribe({ name, args, onUpdate, onError })` → returns a `SubscriptionHandle`
+- `setAuth({ String? token })` → sets/clears the auth token
+
+See the inline docs in `lib/src/convex_client.dart` for details.
+
+## Example app
+
+An example is provided under `example/`:
+
+```
+cd example
+flutter run
 ```
 
-The native build systems that are invoked by FFI (and method channel) plugins are:
+## Troubleshooting
 
-* For Android: Gradle, which invokes the Android NDK for native builds.
-  * See the documentation in android/build.gradle.
-* For iOS and MacOS: Xcode, via CocoaPods.
-  * See the documentation in ios/convex_flutter.podspec.
-  * See the documentation in macos/convex_flutter.podspec.
-* For Linux and Windows: CMake.
-  * See the documentation in linux/CMakeLists.txt.
-  * See the documentation in windows/CMakeLists.txt.
+- Rust not found: install via `rustup` and ensure `cargo` is on your PATH
+- Android build issues: use JDK 11, ensure NDK is installed via Android SDK Manager
+- iOS/macOS: run `pod install` inside the `example/ios` or your app's `ios` folder if needed
+- Windows: install Visual Studio Build Tools with C++ workload
 
-## Binding to native code
+## Contributing
 
-To use the native code, bindings in Dart are needed.
-To avoid writing these by hand, they are generated from the header file
-(`src/convex_flutter.h`) by `package:ffigen`.
-Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
+Contributions are welcome! Please open an issue or pull request.
 
-## Invoking native code
+## License
 
-Very short-running native functions can be directly invoked from any isolate.
-For example, see `sum` in `lib/convex_flutter.dart`.
-
-Longer-running functions should be invoked on a helper isolate to avoid
-dropping frames in Flutter applications.
-For example, see `sumAsync` in `lib/convex_flutter.dart`.
-
-## Flutter help
-
-For help getting started with Flutter, view our
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
