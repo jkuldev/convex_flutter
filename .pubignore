@@ -1,0 +1,15 @@
+# Exclude development/research documentation files from pub.dev package
+doc/CONVEX_PROTOCOL.md
+doc/REAL_CONVEX_PROTOCOL.md
+docs/CONVEX_PROTOCOL.md
+docs/REAL_CONVEX_PROTOCOL.md
+
+# Exclude other development files
+native impl.md
+WEB_IMPLEMENTATION_COMPLETE.md
+WEB_PLATFORM_STATUS.md
+NATIVE_PLATFORM_FIX.md
+WEB_SUCCESS.md
+RELEASE_PREPARATION_SUMMARY.md
+RELEASE_CHECKLIST.md
+RELEASE_NOTES_v3.0.0.md
