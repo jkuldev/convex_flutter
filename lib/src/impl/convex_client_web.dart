@@ -154,6 +154,9 @@ class WebConvexClient implements IConvexClient {
       _reconnectAttempts = 0; // Reset reconnection counter
       _updateConnectionState(WebSocketConnectionState.connected);
 
+      // Send Connect handshake (required by Convex protocol)
+      _sendConnectMessage();
+
       // Send auth token if available
       if (_currentAuthToken != null) {
         _sendAuthMessage(_currentAuthToken!);
@@ -208,18 +211,30 @@ class WebConvexClient implements IConvexClient {
       debugPrint('=== [WebConvexClient] Received message type: $type, id: $id ===');
 
       switch (type) {
-        case 'queryResult':
-        case 'mutationResult':
-        case 'actionResult':
-          _handleOperationResult(id, message);
+        case 'Transition':
+          // Query subscription updates
+          _handleTransition(message);
           break;
 
-        case 'subscriptionUpdate':
-          _handleSubscriptionUpdate(id, message);
+        case 'MutationResponse':
+          _handleMutationResponse(message);
           break;
 
-        case 'error':
-          _handleErrorMessage(id, message);
+        case 'ActionResponse':
+          _handleActionResponse(message);
+          break;
+
+        case 'Ping':
+          // Respond to server ping
+          _sendPong();
+          break;
+
+        case 'FatalError':
+          _handleFatalError(message);
+          break;
+
+        case 'AuthError':
+          _handleAuthError(message);
           break;
 
         default:
@@ -230,75 +245,106 @@ class WebConvexClient implements IConvexClient {
     }
   }
 
-  /// Handles operation result messages (query, mutation, action).
-  void _handleOperationResult(String? id, Map<String, dynamic> message) {
-    if (id == null) {
-      debugPrint('WARNING: [WebConvexClient] Operation result without ID');
-      return;
-    }
+  /// Handles Transition messages (query subscription updates).
+  void _handleTransition(Map<String, dynamic> message) {
+    final modifications = message['modifications'] as List?;
+    if (modifications == null) return;
 
-    final completer = _pendingRequests.remove(id);
-    if (completer == null) {
-      debugPrint('WARNING: [WebConvexClient] No pending request for ID: $id');
-      return;
+    for (final mod in modifications) {
+      final queryId = mod['queryId']?.toString();
+      if (queryId == null) continue;
+
+      final subscription = _subscriptions[queryId];
+      if (subscription == null) continue;
+
+      final value = mod['value'];
+      if (value != null) {
+        final valueJson = jsonEncode(value);
+        subscription.onUpdate(valueJson);
+      }
     }
+  }
+
+  /// Handles MutationResponse messages.
+  void _handleMutationResponse(Map<String, dynamic> message) {
+    final requestId = message['requestId'] as String?;
+    if (requestId == null) return;
+
+    final completer = _pendingRequests.remove(requestId);
+    if (completer == null) return;
 
     final result = message['result'];
-    if (result == null) {
-      completer.completeError(Exception('No result in message'));
-      return;
-    }
-
-    // Convert result to JSON string
-    final resultJson = jsonEncode(result);
-    completer.complete(resultJson);
-  }
-
-  /// Handles subscription update messages.
-  void _handleSubscriptionUpdate(String? id, Map<String, dynamic> message) {
-    if (id == null) {
-      debugPrint('WARNING: [WebConvexClient] Subscription update without ID');
-      return;
-    }
-
-    final subscription = _subscriptions[id];
-    if (subscription == null) {
-      debugPrint('WARNING: [WebConvexClient] No subscription for ID: $id');
-      return;
-    }
-
-    final data = message['data'];
-    if (data != null) {
-      final dataJson = jsonEncode(data);
-      subscription.onUpdate(dataJson);
+    if (result != null) {
+      final resultJson = jsonEncode(result);
+      completer.complete(resultJson);
+    } else {
+      completer.completeError(Exception('No result in mutation response'));
     }
   }
 
-  /// Handles error messages.
-  void _handleErrorMessage(String? id, Map<String, dynamic> message) {
-    final errorMsg = message['message'] as String? ?? 'Unknown error';
-    final errorData = message['data'];
-    final errorDataJson = errorData != null ? jsonEncode(errorData) : null;
+  /// Handles ActionResponse messages.
+  void _handleActionResponse(Map<String, dynamic> message) {
+    final requestId = message['requestId'] as String?;
+    if (requestId == null) return;
 
-    debugPrint('ERROR: [WebConvexClient] Received error: $errorMsg');
+    final completer = _pendingRequests.remove(requestId);
+    if (completer == null) return;
 
-    if (id != null) {
-      // Error for specific request
-      final completer = _pendingRequests.remove(id);
-      if (completer != null) {
-        completer.completeError(Exception(errorMsg));
-        return;
-      }
-
-      // Error for subscription
-      final subscription = _subscriptions[id];
-      if (subscription != null) {
-        subscription.onError(errorMsg, errorDataJson);
-        return;
-      }
+    final result = message['result'];
+    if (result != null) {
+      final resultJson = jsonEncode(result);
+      completer.complete(resultJson);
+    } else {
+      completer.completeError(Exception('No result in action response'));
     }
+  }
 
-    debugPrint('WARNING: [WebConvexClient] Error without matching request: $errorMsg');
+  /// Handles FatalError messages.
+  void _handleFatalError(Map<String, dynamic> message) {
+    final error = message['error'] as String? ?? 'Unknown fatal error';
+    debugPrint('FATAL ERROR: [WebConvexClient] $error');
+
+    // Close connection on fatal error
+    _ws?.close();
+  }
+
+  /// Handles AuthError messages.
+  void _handleAuthError(Map<String, dynamic> message) {
+    final error = message['error'] as String? ?? 'Authentication error';
+    debugPrint('AUTH ERROR: [WebConvexClient] $error');
+
+    // Clear auth and notify
+    _authStateController.add(false);
+  }
+
+  /// Sends Pong response to server Ping.
+  void _sendPong() {
+    try {
+      _sendMessage({
+        'type': 'Event',
+        'event': 'Pong',
+      });
+      debugPrint('=== [WebConvexClient] Sent Pong ===');
+    } catch (e) {
+      debugPrint('ERROR: [WebConvexClient] Failed to send Pong: $e');
+    }
+  }
+
+  /// Sends Connect handshake message.
+  void _sendConnectMessage() {
+    try {
+      // Generate or reuse session ID
+      _sessionId ??= 'web-session-${DateTime.now().microsecondsSinceEpoch}';
+
+      _sendMessage({
+        'type': 'Connect',
+        'sessionId': _sessionId,
+        'maxObservedTimestamp': null,
+      });
+      debugPrint('=== [WebConvexClient] Sent Connect handshake ===');
+    } catch (e) {
+      debugPrint('ERROR: [WebConvexClient] Failed to send Connect: $e');
+    }
   }
 
   /// Updates connection state and emits to stream.
