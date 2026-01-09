@@ -401,8 +401,9 @@ class WebConvexClient implements IConvexClient {
   /// Sends authentication message.
   void _sendAuthMessage(String token) {
     try {
+      // Send Authenticate message (Convex protocol)
       _sendMessage({
-        'type': 'setAuth',
+        'type': 'Authenticate',
         'token': token,
       });
       debugPrint('=== [WebConvexClient] Auth token sent ===');
@@ -417,27 +418,54 @@ class WebConvexClient implements IConvexClient {
 
   @override
   Future<String> query(String name, Map<String, String> args) async {
-    final id = _generateMessageId();
+    // Queries in Convex protocol use ModifyQuerySet (like subscriptions)
+    // We subscribe, wait for first result, then unsubscribe
+    final queryId = _queryIdCounter++;
+    final queryIdStr = queryId.toString();
     final completer = Completer<String>();
-    _pendingRequests[id] = completer;
+
+    // Create temporary subscription for one-shot query
+    final subscription = _WebSubscription(
+      id: queryIdStr,
+      onUpdate: (value) {
+        if (!completer.isCompleted) {
+          completer.complete(value);
+          // Auto-unsubscribe after getting result
+          _unsubscribe(queryIdStr);
+        }
+      },
+      onError: (message, value) {
+        if (!completer.isCompleted) {
+          completer.completeError(Exception(message));
+          _subscriptions.remove(queryIdStr);
+        }
+      },
+    );
+    _subscriptions[queryIdStr] = subscription;
 
     try {
+      // Send ModifyQuerySet with Add (Convex protocol for queries)
       _sendMessage({
-        'type': 'query',
-        'id': id,
-        'name': name,
-        'args': args,
+        'type': 'ModifyQuerySet',
+        'modifications': [
+          {
+            'type': 'Add',
+            'queryId': queryId,
+            'udfPath': name,
+            'args': [args],  // Args must be array
+          }
+        ],
       });
 
       return await completer.future.timeout(
         config.operationTimeout,
         onTimeout: () {
-          _pendingRequests.remove(id);
+          _subscriptions.remove(queryIdStr);
           throw TimeoutException('Query timeout: $name');
         },
       );
     } catch (e) {
-      _pendingRequests.remove(id);
+      _subscriptions.remove(queryIdStr);
       rethrow;
     }
   }
@@ -447,27 +475,28 @@ class WebConvexClient implements IConvexClient {
     required String name,
     required Map<String, String> args,
   }) async {
-    final id = _generateMessageId();
+    final requestId = _generateMessageId();
     final completer = Completer<String>();
-    _pendingRequests[id] = completer;
+    _pendingRequests[requestId] = completer;
 
     try {
+      // Send Mutation message (Convex protocol)
       _sendMessage({
-        'type': 'mutation',
-        'id': id,
-        'name': name,
-        'args': args,
+        'type': 'Mutation',
+        'requestId': requestId,
+        'udfPath': name,  // Use udfPath instead of name
+        'args': [args],   // Args must be array, not object
       });
 
       return await completer.future.timeout(
         config.operationTimeout,
         onTimeout: () {
-          _pendingRequests.remove(id);
+          _pendingRequests.remove(requestId);
           throw TimeoutException('Mutation timeout: $name');
         },
       );
     } catch (e) {
-      _pendingRequests.remove(id);
+      _pendingRequests.remove(requestId);
       rethrow;
     }
   }
@@ -477,27 +506,28 @@ class WebConvexClient implements IConvexClient {
     required String name,
     required Map<String, String> args,
   }) async {
-    final id = _generateMessageId();
+    final requestId = _generateMessageId();
     final completer = Completer<String>();
-    _pendingRequests[id] = completer;
+    _pendingRequests[requestId] = completer;
 
     try {
+      // Send Action message (Convex protocol)
       _sendMessage({
-        'type': 'action',
-        'id': id,
-        'name': name,
-        'args': args,
+        'type': 'Action',
+        'requestId': requestId,
+        'udfPath': name,  // Use udfPath instead of name
+        'args': [args],   // Args must be array, not object
       });
 
       return await completer.future.timeout(
         config.operationTimeout,
         onTimeout: () {
-          _pendingRequests.remove(id);
+          _pendingRequests.remove(requestId);
           throw TimeoutException('Action timeout: $name');
         },
       );
     } catch (e) {
-      _pendingRequests.remove(id);
+      _pendingRequests.remove(requestId);
       rethrow;
     }
   }
@@ -509,49 +539,66 @@ class WebConvexClient implements IConvexClient {
     required void Function(String) onUpdate,
     required void Function(String, String?) onError,
   }) async {
-    final id = _generateMessageId();
+    // Use incrementing query ID (Convex protocol requirement)
+    final queryId = _queryIdCounter++;
+    final queryIdStr = queryId.toString();
 
     // Create subscription record
     final subscription = _WebSubscription(
-      id: id,
+      id: queryIdStr,
       onUpdate: onUpdate,
       onError: onError,
     );
-    _subscriptions[id] = subscription;
+    _subscriptions[queryIdStr] = subscription;
 
     try {
+      // Send ModifyQuerySet with Add modification (Convex protocol)
       _sendMessage({
-        'type': 'subscribe',
-        'id': id,
-        'name': name,
-        'args': args,
+        'type': 'ModifyQuerySet',
+        'modifications': [
+          {
+            'type': 'Add',
+            'queryId': queryId,
+            'udfPath': name,  // Use udfPath instead of name
+            'args': [args],   // Args must be array, not object
+          }
+        ],
       });
 
-      debugPrint('=== [WebConvexClient] Subscription created: $id ===');
+      debugPrint('=== [WebConvexClient] Subscription created: queryId=$queryId ===');
 
       // Return handle for cancellation
       return _WebSubscriptionHandle(
         onCancel: () {
-          _unsubscribe(id);
+          _unsubscribe(queryIdStr);
         },
       );
     } catch (e) {
-      _subscriptions.remove(id);
+      _subscriptions.remove(queryIdStr);
       rethrow;
     }
   }
 
   /// Unsubscribes from a subscription.
-  void _unsubscribe(String id) {
-    final subscription = _subscriptions.remove(id);
+  void _unsubscribe(String queryIdStr) {
+    final subscription = _subscriptions.remove(queryIdStr);
     if (subscription == null) return;
 
-    debugPrint('=== [WebConvexClient] Unsubscribing: $id ===');
+    debugPrint('=== [WebConvexClient] Unsubscribing: queryId=$queryIdStr ===');
 
     try {
+      final queryId = int.tryParse(queryIdStr);
+      if (queryId == null) return;
+
+      // Send ModifyQuerySet with Remove modification (Convex protocol)
       _sendMessage({
-        'type': 'unsubscribe',
-        'id': id,
+        'type': 'ModifyQuerySet',
+        'modifications': [
+          {
+            'type': 'Remove',
+            'queryId': queryId,
+          }
+        ],
       });
     } catch (e) {
       debugPrint('ERROR: [WebConvexClient] Failed to send unsubscribe: $e');
