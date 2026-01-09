@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:convex_flutter/src/impl/convex_client_interface.dart';
-import 'package:convex_flutter/src/impl/convex_client_native.dart';
-import 'package:convex_flutter/src/impl/convex_client_web.dart';
+import 'package:convex_flutter/src/impl/convex_client_factory.dart';
 import 'package:convex_flutter/src/rust/lib.dart' show WebSocketConnectionState, SubscriptionHandle, AuthHandle;
 import 'package:convex_flutter/src/connection_status.dart';
 import 'package:convex_flutter/src/convex_config.dart';
@@ -112,16 +110,11 @@ class ConvexClient {
       throw StateError('ConvexClient already initialized');
     }
 
-    // Platform-specific implementation selection
-    final IConvexClient impl;
-
-    if (kIsWeb) {
-      // Web platform: Use pure Dart WebSocket implementation
-      impl = await WebConvexClient.create(config);
-    } else {
-      // Native platforms: Use FFI + Rust SDK
-      impl = await NativeConvexClient.create(config);
-    }
+    // Create platform-specific implementation using factory
+    // Factory automatically selects:
+    // - WebConvexClient (pure Dart) on web
+    // - NativeConvexClient (FFI + Rust SDK) on native platforms
+    final IConvexClient impl = await createPlatformClient(config);
 
     // Create singleton with chosen implementation
     _instance = ConvexClient._(impl);

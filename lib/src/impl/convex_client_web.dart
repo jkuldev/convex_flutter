@@ -193,6 +193,8 @@ class WebConvexClient implements IConvexClient {
   /// Handles incoming WebSocket messages.
   void _handleMessage(String data) {
     try {
+      debugPrint('=== [WebConvexClient] RAW MESSAGE: $data ===');
+
       final message = jsonDecode(data) as Map<String, dynamic>;
       final type = message['type'] as String?;
       final id = message['id'] as String?;
@@ -338,6 +340,7 @@ class WebConvexClient implements IConvexClient {
     }
 
     final messageJson = jsonEncode(message);
+    debugPrint('=== [WebConvexClient] SENDING: $messageJson ===');
     ws.send(messageJson.toJS);
 
     debugPrint('=== [WebConvexClient] Sent message: ${message['type']} (id: ${message['id']}) ===');
