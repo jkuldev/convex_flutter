@@ -155,8 +155,12 @@ class WebConvexClient implements IConvexClient {
     }.toJS;
 
     // Connection closed
-    ws.onclose = (web.Event event) {
+    ws.onclose = (web.CloseEvent event) {
+      final code = event.code;
+      final reason = event.reason;
+      final wasClean = event.wasClean;
       debugPrint('=== [WebConvexClient] WebSocket closed ===');
+      debugPrint('=== [WebConvexClient] Close code: $code, reason: "$reason", wasClean: $wasClean ===');
       _updateConnectionState(WebSocketConnectionState.connecting);
 
       // Attempt reconnection if not disposed
@@ -167,7 +171,8 @@ class WebConvexClient implements IConvexClient {
 
     // Connection error
     ws.onerror = (web.Event event) {
-      debugPrint('ERROR: [WebConvexClient] WebSocket error: $event');
+      debugPrint('ERROR: [WebConvexClient] WebSocket error occurred');
+      debugPrint('ERROR: [WebConvexClient] Event type: ${event.type}');
       _updateConnectionState(WebSocketConnectionState.connecting);
     }.toJS;
 
