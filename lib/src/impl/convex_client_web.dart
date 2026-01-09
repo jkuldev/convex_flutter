@@ -115,9 +115,10 @@ class WebConvexClient implements IConvexClient {
     debugPrint('=== [WebConvexClient] Connecting to Convex ===');
 
     try {
-      // Convert HTTPS to WSS URL
+      // Convert HTTPS to WSS URL with correct Convex sync endpoint
+      // Format: wss://deployment.convex.cloud/api/{version}/sync
       final wsUrl = config.deploymentUrl.replaceFirst('https', 'wss');
-      final fullUrl = '$wsUrl/ws';
+      final fullUrl = '$wsUrl/api/sync';
 
       debugPrint('=== [WebConvexClient] WebSocket URL: $fullUrl ===');
 
