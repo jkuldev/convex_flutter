@@ -20,13 +20,15 @@ The Convex platform uses WebSockets for real-time communication between clients 
 ```
 HTTPS:  https://your-deployment.convex.cloud
         ↓
-WSS:    wss://your-deployment.convex.cloud/ws
+WSS:    wss://your-deployment.convex.cloud/api/sync
 ```
 
 **Connection Process:**
-1. Client opens WebSocket connection to `wss://{deployment-url}/ws`
+1. Client opens WebSocket connection to `wss://{deployment-url}/api/sync`
 2. Connection is bi-directional (client ↔ server)
-3. JSON-based message protocol
+3. JSON-based message protocol (Convex Sync Protocol)
+
+**Note**: The endpoint is `/api/sync` (not `/ws`). This is the official Convex sync protocol endpoint for real-time database synchronization.
 
 ---
 
