@@ -19,9 +19,13 @@ This package wraps the [Convex Rust library](https://github.com/get-convex/conve
 
 ## Installation
 
-```
+Add the package to your Flutter project:
+
+```bash
 flutter pub add convex_flutter
 ```
+
+That's it! The health check query mentioned below is optional - you can start using the SDK immediately without it.
 
 ## Requirements
 
@@ -35,6 +39,28 @@ flutter pub add convex_flutter
 
 ## Quick start
 
+### Optional: Create a Health Check Query (Recommended)
+
+For connection monitoring and health checks, it's recommended to create a lightweight health check query in your Convex backend. This is **optional** but provides a clean way to verify connectivity without side effects.
+
+Create a file `convex/health.ts` in your Convex backend:
+
+```typescript
+// convex/health.ts
+import { query } from "./_generated/server";
+
+export const ping = query({
+  args: {},
+  handler: async () => {
+    return "ok";
+  },
+});
+```
+
+This creates a lightweight endpoint at `health:ping` that you can use for connection health checks. It has no side effects and returns instantly.
+
+### Initialize the Client
+
 ```dart
 import 'package:convex_flutter/convex_flutter.dart';
 
@@ -47,7 +73,7 @@ Future<void> main() async {
       deploymentUrl: 'https://my-app.convex.cloud',
       clientId: 'flutter-app-1.0',
       operationTimeout: Duration(seconds: 30), // Optional, defaults to 30s
-      healthCheckQuery: 'health:ping', // Optional, for connection checks
+      healthCheckQuery: 'health:ping', // Optional, for connection checks (requires health.ts)
     ),
   );
 
@@ -225,9 +251,13 @@ if (ConvexClient.instance.isConnected) {
 - Synchronous getter for immediate state access
 - Works across all platforms
 
-**Note:** The WebSocket connection is established lazily when the first operation (query, mutation, subscribe, action) is executed. To establish the connection immediately on app startup, trigger a lightweight health check query in your app's initialization:
+**Note:** The WebSocket connection is established lazily when the first operation (query, mutation, subscribe, action) is executed.
 
-**First, create a health check query in your Convex backend:**
+**Optional: Auto-Connect on Startup**
+
+To establish the connection immediately when your app starts (recommended for better UX), trigger a lightweight query in your app's initialization. Using a dedicated health check query is the cleanest approach:
+
+**1. Create a health check query in your Convex backend (optional but recommended):**
 
 ```typescript
 // convex/health.ts
@@ -241,7 +271,7 @@ export const ping = query({
 });
 ```
 
-**Then trigger it on app startup:**
+**2. Trigger it on app startup:**
 
 ```dart
 // In your home screen or app initialization
@@ -251,6 +281,13 @@ void initState() {
   // Trigger connection immediately with health check
   ConvexClient.instance.query('health:ping', {});
 }
+```
+
+**Alternative:** You can use any existing lightweight query instead of creating a dedicated health check:
+
+```dart
+// Use any existing query to trigger connection
+ConvexClient.instance.query('users:list', {'limit': '1'});
 ```
 
 ### Manual Connection Check (Deprecated)

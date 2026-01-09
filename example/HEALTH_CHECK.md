@@ -1,6 +1,17 @@
-# Health Check Query Setup
+# Health Check Query Setup (Optional)
 
-To use the health check functionality in this example app, you need to create a simple health check query in your Convex backend.
+To use the health check functionality in this example app, you can optionally create a simple health check query in your Convex backend. This is **recommended but not required** - you can use any existing query instead.
+
+## Why Create a Dedicated Health Check?
+
+A dedicated health check query provides:
+- **Lightweight**: No database queries or complex logic
+- **Fast**: Minimal processing time
+- **Clear Purpose**: Obviously for health checks
+- **No Side Effects**: Doesn't modify any data
+- **Best Practice**: Follows Convex and REST API conventions
+
+However, if you prefer, you can use any existing lightweight query (like `users:count` or `messages:list`) instead.
 
 ## Creating the Health Check Query
 
