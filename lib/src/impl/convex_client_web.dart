@@ -340,6 +340,7 @@ class WebConvexClient implements IConvexClient {
         'type': 'Connect',
         'sessionId': _sessionId,
         'maxObservedTimestamp': null,
+        'connectionCount': _reconnectAttempts + 1,  // Required field
       });
       debugPrint('=== [WebConvexClient] Sent Connect handshake ===');
     } catch (e) {
