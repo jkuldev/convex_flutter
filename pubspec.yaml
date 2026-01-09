@@ -1,6 +1,6 @@
 name: convex_flutter
-description: A Flutter package for Convex backend integration with real-time WebSocket connection state monitoring, automatic token refresh, and comprehensive lifecycle management. Build reactive Flutter apps with Convex.
-version: 2.2.0
+description: Multi-platform Convex backend integration for Flutter. Real-time WebSocket, subscriptions, auth, lifecycle management. Supports web (pure Dart) and native.
+version: 3.0.0
 repository: https://github.com/jkuldev/convex_flutter
 homepage: https://jkuldev.com
 
@@ -12,8 +12,12 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_rust_bridge: ^2.11.1
+  flutter_web_plugins:
+    sdk: flutter
   freezed_annotation: ^3.1.0
   plugin_platform_interface: ^2.0.2
+  http: ^1.2.0           # HTTP client for web REST fallback
+  web: ^1.0.0            # WebSocket API for web platform
 
 dev_dependencies:
   ffi: ^2.1.3
@@ -55,6 +59,9 @@ flutter:
         ffiPlugin: true
       windows:
         ffiPlugin: true
+      web:
+        pluginClass: ConvexFlutterWeb
+        fileName: convex_flutter_web.dart
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
