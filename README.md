@@ -15,7 +15,7 @@ This package wraps the [Convex Rust library](https://github.com/get-convex/conve
 - **Lifecycle monitoring** - Stream of app lifecycle events (foreground/background)
 - **Connection management** - Manual connection checking and reconnect functionality
 - **Singleton pattern** - Access client anywhere via `ConvexClient.instance`
-- Works on Android, iOS, macOS, Windows, and Linux (FFI)
+- **Multi-platform support** - Works on Web (pure Dart), Android, iOS, macOS, Windows, and Linux (FFI)
 
 ## Installation
 
@@ -27,15 +27,49 @@ flutter pub add convex_flutter
 
 That's it! The health check query mentioned below is optional - you can start using the SDK immediately without it.
 
+## Platform Configuration
+
+**Important**: Some platforms require additional configuration for network access. This is a one-time setup.
+
+| Platform | Configuration Required |
+|----------|------------------------|
+| **Web** | ✅ None - works automatically |
+| **iOS** | ✅ None - works automatically |
+| **macOS** | ⚠️ **Network entitlements required** |
+| **Android** | ⚠️ **INTERNET permission required** |
+| **Windows** | ✅ None - works automatically |
+| **Linux** | ✅ None - works automatically |
+
+### Quick Setup
+
+**macOS**: Add network entitlements to `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`:
+
+```xml
+<key>com.apple.security.network.client</key>
+<true/>
+<key>com.apple.security.network.server</key>
+<true/>
+```
+
+**Android**: Add internet permission to `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+**📖 See [PLATFORM_CONFIGURATION.md](PLATFORM_CONFIGURATION.md) for complete setup instructions and troubleshooting.**
+
 ## Requirements
 
 - Dart SDK >= 3.8.1 and Flutter >= 3.3.0
-- A working Rust toolchain (rustup + cargo) to build native code
-- Platform toolchains:
-  - Android: JDK 11 and Android SDK/NDK
-  - iOS/macOS: Xcode and CocoaPods
-  - Windows: Visual Studio Build Tools (C++)
-  - Linux: clang, pkg-config, and build essentials
+- **Web platform**: No additional requirements (uses pure Dart implementation)
+- **Native platforms** (Android, iOS, macOS, Windows, Linux):
+  - Rust toolchain (rustup + cargo) for building native code
+  - Platform-specific toolchains:
+    - Android: JDK 11 and Android SDK/NDK
+    - iOS/macOS: Xcode and CocoaPods
+    - Windows: Visual Studio Build Tools (C++)
+    - Linux: clang, pkg-config, and build essentials
 
 ## Quick start
 
@@ -406,10 +440,21 @@ The example demonstrates:
 
 ## Troubleshooting
 
-- Rust not found: install via `rustup` and ensure `cargo` is on your PATH
-- Android build issues: use JDK 11, ensure NDK is installed via Android SDK Manager
-- iOS/macOS: run `pod install` inside the `example/ios` or your app's `ios` folder if needed
-- Windows: install Visual Studio Build Tools with C++ workload
+### Build Issues
+
+- **Rust not found**: Install via `rustup` and ensure `cargo` is on your PATH (not needed for web)
+- **Android build issues**: Use JDK 11, ensure NDK is installed via Android SDK Manager
+- **iOS/macOS**: Run `pod install` inside the `example/ios` or your app's `ios` folder if needed
+- **Windows**: Install Visual Studio Build Tools with C++ workload
+
+### Connection Issues
+
+- **macOS stuck in "connecting" state**: Missing network entitlements - see [PLATFORM_CONFIGURATION.md](PLATFORM_CONFIGURATION.md#macos)
+- **Android network errors**: Missing INTERNET permission - see [PLATFORM_CONFIGURATION.md](PLATFORM_CONFIGURATION.md#android)
+- **WebSocket not connecting**: Check your `deploymentUrl` and network permissions
+- **Timeout errors**: Increase `operationTimeout` in `ConvexConfig`
+
+**📖 For detailed troubleshooting, see [PLATFORM_CONFIGURATION.md](PLATFORM_CONFIGURATION.md#troubleshooting)**
 
 ## Contributing
 

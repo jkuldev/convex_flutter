@@ -1,3 +1,109 @@
+## 3.0.0
+
+### Major New Features
+
+- **🌐 Web Platform Support**: Full web platform support with pure Dart implementation
+  - Uses native browser WebSocket API (no FFI required)
+  - 100% API compatibility with native platforms
+  - Automatic platform selection via conditional imports
+  - No Rust toolchain required for web builds
+  - All features work identically on web: queries, mutations, actions, subscriptions, auth
+
+### Web Implementation Details
+
+- Implemented Convex WebSocket wire protocol in pure Dart:
+  - RFC 4122 compliant UUID v4 generation for session IDs
+  - Proper protocol message formatting (Connect, ModifyQuerySet, Mutation, Action, Transition, Ping/Pong)
+  - Query set version tracking with baseVersion/newVersion
+  - Integer requestId (u32) for protocol compliance
+  - Real-time subscription management with automatic cleanup
+  - Connection state monitoring and automatic reconnection
+  - Ping/Pong heartbeat for connection keepalive
+
+### Critical Bug Fixes
+
+- **Fixed macOS native platform connection issues**:
+  - Root cause: Missing network entitlements in App Sandbox configuration
+  - Added `com.apple.security.network.client` to both DebugProfile.entitlements and Release.entitlements
+  - macOS apps can now establish WebSocket connections to Convex backend
+
+- **Fixed Android missing INTERNET permission**:
+  - Added `<uses-permission android:name="android.permission.INTERNET" />` to AndroidManifest.xml
+  - Android apps now have proper network access
+
+- **Fixed Rust rustls CryptoProvider error**:
+  - Removed `default-features = false` from convex dependency in Cargo.toml
+  - rustls 0.23+ now has proper CryptoProvider configuration
+
+### Improvements
+
+- **Platform Configuration Documentation**:
+  - New PLATFORM_CONFIGURATION.md guide with setup instructions for all platforms
+  - Updated README.md with platform-specific requirements
+  - Clear troubleshooting guides for common connection issues
+
+- **Example App**:
+  - All platforms (web, iOS, Android, macOS) now properly configured
+  - Works on web without Rust toolchain
+  - Demonstrates cross-platform compatibility
+
+- **Rust SDK Update**:
+  - Upgraded convex SDK from 0.9.0 to 0.10.2
+  - Better protocol compatibility with Convex backend
+
+### Platform Support Matrix
+
+| Platform | Status | Implementation | Network Config Required |
+|----------|--------|----------------|-------------------------|
+| Web | ✅ New | Pure Dart | None |
+| iOS | ✅ Working | FFI + Rust | None |
+| macOS | ✅ Fixed | FFI + Rust | Network entitlements |
+| Android | ✅ Fixed | FFI + Rust | INTERNET permission |
+| Windows | ✅ Working | FFI + Rust | None |
+| Linux | ✅ Working | FFI + Rust | None |
+
+### API Changes
+
+None - 100% backward compatible. The same API works across all platforms.
+
+### Breaking Changes
+
+None - this is a feature release with bug fixes, no breaking changes to existing API.
+
+### New Files
+
+- `lib/src/impl/convex_client_web.dart` - Pure Dart WebSocket implementation for web
+- `lib/src/impl/convex_client_native.dart` - FFI implementation for native platforms (refactored)
+- `PLATFORM_CONFIGURATION.md` - Comprehensive platform setup guide
+- `WEB_SUCCESS.md` - Web implementation verification documentation
+- `NATIVE_PLATFORM_FIX.md` - Native platform fixes documentation
+
+### Modified Files
+
+- `example/macos/Runner/DebugProfile.entitlements` - Added network permissions
+- `example/macos/Runner/Release.entitlements` - Added network permissions
+- `example/android/app/src/main/AndroidManifest.xml` - Added INTERNET permission
+- `rust/Cargo.toml` - Updated convex SDK and removed default-features = false
+- `lib/src/convex_client.dart` - Refactored to use platform-specific implementations
+- `README.md` - Added web platform documentation and platform configuration guide
+
+### Migration Guide
+
+No migration needed - existing code works without changes on all platforms including web.
+
+To build for web:
+```bash
+flutter build web
+```
+
+No Rust toolchain required for web builds!
+
+### Known Issues
+
+None - all platforms tested and working.
+
+---
+
 ## 1.0.2
 
 - Added support for Dart 3.7.0

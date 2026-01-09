@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:web/web.dart' as web;
@@ -58,8 +59,11 @@ class WebConvexClient implements IConvexClient {
   /// Query ID counter for subscriptions
   int _queryIdCounter = 0;
 
+  /// Query set version counter for ModifyQuerySet messages
+  int _querySetVersion = 0;
+
   /// Pending requests waiting for responses (query, mutation, action)
-  final Map<String, Completer<String>> _pendingRequests = {};
+  final Map<int, Completer<String>> _pendingRequests = {};
 
   /// Active subscriptions
   final Map<String, _WebSubscription> _subscriptions = {};
@@ -152,6 +156,7 @@ class WebConvexClient implements IConvexClient {
     ws.onopen = (web.Event event) {
       debugPrint('=== [WebConvexClient] WebSocket opened ===');
       _reconnectAttempts = 0; // Reset reconnection counter
+      _querySetVersion = 0; // Reset query set version for new connection
       _updateConnectionState(WebSocketConnectionState.connected);
 
       // Send Connect handshake (required by Convex protocol)
@@ -267,7 +272,7 @@ class WebConvexClient implements IConvexClient {
 
   /// Handles MutationResponse messages.
   void _handleMutationResponse(Map<String, dynamic> message) {
-    final requestId = message['requestId'] as String?;
+    final requestId = message['requestId'] as int?;
     if (requestId == null) return;
 
     final completer = _pendingRequests.remove(requestId);
@@ -284,7 +289,7 @@ class WebConvexClient implements IConvexClient {
 
   /// Handles ActionResponse messages.
   void _handleActionResponse(Map<String, dynamic> message) {
-    final requestId = message['requestId'] as String?;
+    final requestId = message['requestId'] as int?;
     if (requestId == null) return;
 
     final completer = _pendingRequests.remove(requestId);
@@ -322,7 +327,8 @@ class WebConvexClient implements IConvexClient {
     try {
       _sendMessage({
         'type': 'Event',
-        'event': 'Pong',
+        'eventType': 'Pong',  // Required field
+        'event': null,  // Required field (can be null)
       });
       debugPrint('=== [WebConvexClient] Sent Pong ===');
     } catch (e) {
@@ -340,7 +346,9 @@ class WebConvexClient implements IConvexClient {
         'type': 'Connect',
         'sessionId': _sessionId,
         'maxObservedTimestamp': null,
-        'connectionCount': _reconnectAttempts + 1,  // Required field
+        'connectionCount': _reconnectAttempts + 1,
+        'lastCloseReason': null,  // Required field
+        'clientTs': DateTime.now().millisecondsSinceEpoch,  // Required field
       });
       debugPrint('=== [WebConvexClient] Sent Connect handshake ===');
     } catch (e) {
@@ -348,19 +356,34 @@ class WebConvexClient implements IConvexClient {
     }
   }
 
-  /// Generates a UUID v4 string.
+  /// Generates a RFC 4122 compliant UUID v4 string.
   String _generateUuid() {
-    // Generate a simple UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    final timestamp = DateTime.now().microsecondsSinceEpoch;
-    final rand1 = (timestamp >> 32) & 0xFFFFFFFF;
-    final rand2 = timestamp & 0xFFFFFFFF;
-    final rand3 = _messageIdCounter++;
+    // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    // Where 4 = version 4, y = variant bits (8, 9, A, or B)
+    final random = math.Random();
 
-    return '${rand1.toRadixString(16).padLeft(8, '0')}-'
-           '${rand2.toRadixString(16).padLeft(4, '0').substring(0, 4)}-'
-           '4${rand2.toRadixString(16).padLeft(3, '0').substring(0, 3)}-'
-           '${((rand3 & 0x3F) | 0x80).toRadixString(16)}${rand3.toRadixString(16).padLeft(2, '0').substring(0, 2)}-'
-           '${timestamp.toRadixString(16).padLeft(12, '0')}';
+    // Generate random values for each segment
+    final segment1 = random.nextInt(0x100000000); // 32 bits = 8 hex chars
+    final segment2 = random.nextInt(0x10000);      // 16 bits = 4 hex chars
+    final segment3 = random.nextInt(0x10000);      // 16 bits = 4 hex chars (we'll set version)
+    final segment4 = random.nextInt(0x10000);      // 16 bits = 4 hex chars (we'll set variant)
+    final segment5a = random.nextInt(0x100000000); // 32 bits = 8 hex chars
+    final segment5b = random.nextInt(0x10000);     // 16 bits = 4 hex chars
+
+    // Set version 4 (bits 12-15 of segment3 = 0100)
+    final version4 = (segment3 & 0x0FFF) | 0x4000;
+
+    // Set variant bits (bits 14-15 of segment4 = 10)
+    final variant = (segment4 & 0x3FFF) | 0x8000;
+
+    // Combine segment5 parts into 12 hex digits
+    final segment5 = '${segment5a.toRadixString(16).padLeft(8, '0')}${segment5b.toRadixString(16).padLeft(4, '0')}';
+
+    return '${segment1.toRadixString(16).padLeft(8, '0')}-'
+           '${segment2.toRadixString(16).padLeft(4, '0')}-'
+           '${version4.toRadixString(16).padLeft(4, '0')}-'
+           '${variant.toRadixString(16).padLeft(4, '0')}-'
+           '$segment5';
   }
 
   /// Updates connection state and emits to stream.
@@ -396,8 +419,8 @@ class WebConvexClient implements IConvexClient {
   }
 
   /// Generates a unique message ID.
-  String _generateMessageId() {
-    return 'web-${DateTime.now().microsecondsSinceEpoch}-${_messageIdCounter++}';
+  int _generateMessageId() {
+    return _messageIdCounter++;
   }
 
   /// Sends a message over WebSocket.
@@ -461,8 +484,13 @@ class WebConvexClient implements IConvexClient {
 
     try {
       // Send ModifyQuerySet with Add (Convex protocol for queries)
+      final baseVersion = _querySetVersion;
+      final newVersion = ++_querySetVersion;
+
       _sendMessage({
         'type': 'ModifyQuerySet',
+        'baseVersion': baseVersion,
+        'newVersion': newVersion,
         'modifications': [
           {
             'type': 'Add',
@@ -569,8 +597,13 @@ class WebConvexClient implements IConvexClient {
 
     try {
       // Send ModifyQuerySet with Add modification (Convex protocol)
+      final baseVersion = _querySetVersion;
+      final newVersion = ++_querySetVersion;
+
       _sendMessage({
         'type': 'ModifyQuerySet',
+        'baseVersion': baseVersion,
+        'newVersion': newVersion,
         'modifications': [
           {
             'type': 'Add',
@@ -607,8 +640,13 @@ class WebConvexClient implements IConvexClient {
       if (queryId == null) return;
 
       // Send ModifyQuerySet with Remove modification (Convex protocol)
+      final baseVersion = _querySetVersion;
+      final newVersion = ++_querySetVersion;
+
       _sendMessage({
         'type': 'ModifyQuerySet',
+        'baseVersion': baseVersion,
+        'newVersion': newVersion,
         'modifications': [
           {
             'type': 'Remove',
