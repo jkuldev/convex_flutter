@@ -52,6 +52,12 @@ class WebConvexClient implements IConvexClient {
   /// Message ID counter for generating unique request IDs
   int _messageIdCounter = 0;
 
+  /// Session ID for Convex sync protocol
+  String? _sessionId;
+
+  /// Query ID counter for subscriptions
+  int _queryIdCounter = 0;
+
   /// Pending requests waiting for responses (query, mutation, action)
   final Map<String, Completer<String>> _pendingRequests = {};
 
