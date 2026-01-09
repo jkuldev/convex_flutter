@@ -1,7 +1,11 @@
 mod frb_generated;
 use std::{
     collections::{BTreeMap, HashMap},
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 #[cfg(debug_assertions)]
@@ -12,6 +16,7 @@ use convex::{
     ConvexClientBuilder,
     FunctionResult,
     Value, // Convex client and result types
+    WebSocketState as ConvexWebSocketState,
 };
 use flutter_rust_bridge::{frb, DartFnFuture};
 use futures::{
@@ -22,6 +27,8 @@ use log::debug; // Logging for debugging purposes
 #[cfg(debug_assertions)]
 use log::LevelFilter;
 use parking_lot::Mutex;
+use base64::Engine;
+use serde::Deserialize;
 
 // Custom error type for Convex client operations, exposed to Dart.
 #[derive(Debug, thiserror::Error)]
@@ -42,6 +49,52 @@ impl From<anyhow::Error> for ClientError {
     fn from(value: anyhow::Error) -> Self {
         Self::InternalError {
             msg: value.to_string(),
+        }
+    }
+}
+
+/// JWT claims structure for extracting expiration time.
+#[derive(Deserialize)]
+struct JwtClaims {
+    exp: u64,
+}
+
+/// Decodes a JWT token and extracts the expiration timestamp.
+/// Returns None if the token is malformed or doesn't contain an exp claim.
+fn decode_jwt_expiry(token: &str) -> Option<u64> {
+    // JWT format: header.payload.signature
+    let parts: Vec<&str> = token.split('.').collect();
+    if parts.len() != 3 {
+        return None;
+    }
+
+    // Decode payload (second part) using URL-safe base64
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD
+        .decode(parts[1])
+        .ok()?;
+
+    let claims: JwtClaims = serde_json::from_slice(&payload).ok()?;
+    Some(claims.exp)
+}
+
+/// WebSocket connection state exposed to Flutter/Dart.
+///
+/// This enum represents the current state of the WebSocket connection
+/// to the Convex backend, allowing real-time connection monitoring.
+#[derive(Debug, Clone)]
+#[frb]
+pub enum WebSocketConnectionState {
+    /// The WebSocket is open and connected to the Convex backend.
+    Connected,
+    /// The WebSocket is closed and is connecting or reconnecting.
+    Connecting,
+}
+
+impl From<ConvexWebSocketState> for WebSocketConnectionState {
+    fn from(state: ConvexWebSocketState) -> Self {
+        match state {
+            ConvexWebSocketState::Connected => WebSocketConnectionState::Connected,
+            ConvexWebSocketState::Connecting => WebSocketConnectionState::Connecting,
         }
     }
 }
@@ -91,6 +144,37 @@ impl SubscriptionHandle {
     }
 }
 
+/// Opaque type for Dart, representing an auth session handle with lifecycle management.
+/// Used to control the token refresh loop and check authentication state.
+#[frb(opaque)]
+pub struct AuthHandle {
+    cancel_sender: Arc<Mutex<Option<Sender<()>>>>,
+    is_authenticated: Arc<AtomicBool>,
+}
+
+impl AuthHandle {
+    fn new(cancel_sender: Sender<()>, is_authenticated: Arc<AtomicBool>) -> Self {
+        AuthHandle {
+            cancel_sender: Arc::new(Mutex::new(Some(cancel_sender))),
+            is_authenticated,
+        }
+    }
+
+    /// Disposes the auth session, stopping the token refresh loop and clearing authentication.
+    #[frb(sync)]
+    pub fn dispose(&self) {
+        if let Some(sender) = self.cancel_sender.lock().take() {
+            let _ = sender.send(());
+        }
+    }
+
+    /// Returns whether the user is currently authenticated.
+    #[frb(sync)]
+    pub fn is_authenticated(&self) -> bool {
+        self.is_authenticated.load(Ordering::SeqCst)
+    }
+}
+
 /// Adapter for Dart functions as subscribers, handling async callbacks.
 pub struct CallbackSubscriberDartFn {
     on_update: Box<dyn Fn(String) -> DartFnFuture<()> + Send + Sync>, // Async update callback
@@ -120,6 +204,8 @@ pub struct MobileConvexClient {
     client_id: String,              // Client ID for authentication
     client: OnceCell<ConvexClient>, // Lazy-initialized Convex client
     rt: tokio::runtime::Runtime,    // Tokio runtime for async operations
+    // Channel sender for WebSocket state change notifications
+    state_change_sender: Arc<Mutex<Option<tokio::sync::mpsc::Sender<ConvexWebSocketState>>>>,
 }
 
 impl MobileConvexClient {
@@ -137,23 +223,101 @@ impl MobileConvexClient {
             client_id,
             client: OnceCell::new(),
             rt,
+            state_change_sender: Arc::new(Mutex::new(None)),
         }
+    }
+
+    /// Sets up WebSocket connection state change listener.
+    ///
+    /// Must be called BEFORE any queries/mutations to capture all state changes.
+    /// The callback will be invoked whenever the WebSocket transitions between
+    /// Connected and Connecting states.
+    ///
+    /// # Arguments
+    ///
+    /// * `on_state_change` - Async callback invoked when connection state changes
+    ///
+    /// # Example
+    ///
+    /// ```dart
+    /// await client.onWebsocketStateChange(
+    ///   onStateChange: (state) async {
+    ///     print('Connection state: ${state.name}');
+    ///   },
+    /// );
+    /// ```
+    #[frb]
+    pub async fn on_websocket_state_change(
+        &self,
+        on_state_change: impl Fn(WebSocketConnectionState) -> DartFnFuture<()> + Send + Sync + 'static,
+    ) -> Result<(), ClientError> {
+        println!("RUST: on_websocket_state_change() called");
+
+        // Create tokio mpsc channel for receiving state changes from convex client
+        let (state_tx, mut state_rx) = tokio::sync::mpsc::channel::<ConvexWebSocketState>(10);
+        println!("RUST: Created mpsc channel for state changes");
+
+        // Store sender for use when initializing the client
+        {
+            let mut sender = self.state_change_sender.lock();
+            *sender = Some(state_tx);
+            println!("RUST: Stored state_tx in state_change_sender");
+        }
+
+        // Spawn task to listen for state changes and call Dart callback
+        let on_state_change = Arc::new(on_state_change);
+        println!("RUST: Spawning listener task for state changes");
+        self.rt.spawn(async move {
+            println!("RUST: Listener task started, waiting for state changes");
+            while let Some(state) = state_rx.recv().await {
+                println!("RUST: Received state change from channel: {:?}", state);
+                let dart_state = WebSocketConnectionState::from(state);
+                println!("RUST: Converted to Dart state: {:?}", dart_state);
+                let callback = on_state_change.clone();
+                let future = (callback)(dart_state);
+                println!("RUST: Calling Dart callback");
+                let _ = future.await;
+                println!("RUST: Dart callback completed");
+            }
+            println!("RUST: Listener task exiting (channel closed)");
+        });
+
+        println!("RUST: on_websocket_state_change() returning");
+        Ok(())
     }
 
     /// Retrieves or initializes a connected Convex client.
     async fn connected_client(&self) -> anyhow::Result<ConvexClient> {
         let url = self.deployment_url.clone();
+        let state_sender = self.state_change_sender.lock().clone();
+
+        println!("RUST: connected_client() called with sender: {:?}", state_sender.is_some());
+
         self.client
             .get_or_try_init(async {
                 let client_id = self.client_id.to_owned();
-                self.rt
-                    .spawn(async move {
-                        ConvexClientBuilder::new(url.as_str())
-                            .with_client_id(&client_id)
-                            .build()
-                            .await
-                    })
-                    .await?
+
+                // Build client directly without spawning a task
+                // This ensures callback is registered BEFORE connection starts
+                println!("RUST: Building ConvexClient directly (no task spawn)");
+                let mut builder = ConvexClientBuilder::new(url.as_str())
+                    .with_client_id(&client_id);
+
+                // Register state change callback BEFORE building
+                if let Some(sender) = state_sender {
+                    println!("RUST: Registering state change callback with builder");
+                    builder = builder.with_on_state_change(sender);
+                } else {
+                    println!("RUST WARNING: No sender available - state changes will not be emitted");
+                }
+
+                println!("RUST: Calling builder.build() - connection will start now");
+                let result = builder.build().await;
+                match &result {
+                    Ok(_) => println!("RUST: ConvexClient built successfully"),
+                    Err(e) => println!("RUST ERROR: Failed to build ConvexClient: {:?}", e),
+                }
+                result
             })
             .await
             .map(|client_ref| client_ref.clone())
@@ -210,7 +374,13 @@ impl MobileConvexClient {
             loop {
                 select_biased! {
                     new_val = subscription.next().fuse() => {
-                        let new_val = new_val.expect("Client dropped prematurely");
+                        let new_val = match new_val {
+                            Some(val) => val,
+                            None => {
+                                log::warn!("Subscription stream ended for {}", &name);
+                                break;
+                            }
+                        };
                         match new_val {
                             FunctionResult::Value(value) => {
                                 debug!("Updating with {value:?}");
@@ -301,6 +471,149 @@ impl MobileConvexClient {
             .spawn(async move { client.set_auth(token).await })
             .await
             .map_err(|e| e.into())
+    }
+
+    /// Sets authentication with automatic token refresh.
+    ///
+    /// The `fetch_token` callback is called:
+    /// - Immediately to get the initial token
+    /// - Automatically when the token is about to expire (60 seconds before expiry)
+    ///
+    /// The `on_auth_change` callback is called whenever auth state changes.
+    ///
+    /// Returns an AuthHandle that can be used to dispose the auth session.
+    #[frb]
+    pub async fn set_auth_with_refresh(
+        &self,
+        fetch_token: impl Fn() -> DartFnFuture<Option<String>> + Send + Sync + 'static,
+        on_auth_change: impl Fn(bool) -> DartFnFuture<()> + Send + Sync + 'static,
+    ) -> Result<AuthHandle, ClientError> {
+        let is_authenticated = Arc::new(AtomicBool::new(false));
+        let (cancel_sender, cancel_receiver) = oneshot::channel::<()>();
+
+        let client = self.connected_client().await?;
+        let is_auth_clone = is_authenticated.clone();
+
+        let fetch_token = Arc::new(fetch_token);
+        let on_auth_change = Arc::new(on_auth_change);
+
+        // Buffer time before token expiry to trigger refresh (60 seconds)
+        const REFRESH_BUFFER_SECS: u64 = 60;
+        // Minimum refresh interval to prevent tight loops on errors
+        const MIN_REFRESH_INTERVAL_SECS: u64 = 5;
+        // Default refresh interval when JWT can't be decoded (5 minutes)
+        const DEFAULT_REFRESH_INTERVAL_SECS: u64 = 300;
+
+        // Spawn the token refresh loop
+        self.rt.spawn(async move {
+            let mut cancel_fut = cancel_receiver.fuse();
+            let mut was_authenticated = false;
+
+            loop {
+                // Fetch token from Dart
+                let fetch_token_clone = fetch_token.clone();
+                let token_future = (fetch_token_clone)();
+
+                let token_result = select_biased! {
+                    _ = cancel_fut => {
+                        // Cancelled - clear auth and exit
+                        debug!("Auth refresh cancelled");
+                        let mut client = client.clone();
+                        let _ = client.set_auth(None).await;
+                        if was_authenticated {
+                            let on_auth_change_clone = on_auth_change.clone();
+                            let future = (on_auth_change_clone)(false);
+                            let _ = future.await;
+                        }
+                        break;
+                    }
+                    token = token_future.fuse() => token,
+                };
+
+                let now_secs = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs();
+
+                match token_result {
+                    Some(token) => {
+                        // Set the token
+                        let mut client = client.clone();
+                        client.set_auth(Some(token.clone())).await;
+
+                        // Notify state change if needed
+                        if !was_authenticated {
+                            was_authenticated = true;
+                            is_auth_clone.store(true, Ordering::SeqCst);
+                            let on_auth_change_clone = on_auth_change.clone();
+                            let future = (on_auth_change_clone)(true);
+                            tokio::spawn(async move {
+                                let _ = future.await;
+                            });
+                        }
+
+                        // Decode expiry and schedule next refresh
+                        let sleep_duration = if let Some(exp) = decode_jwt_expiry(&token) {
+                            let refresh_at = exp.saturating_sub(REFRESH_BUFFER_SECS);
+                            if refresh_at > now_secs {
+                                Duration::from_secs(refresh_at - now_secs)
+                            } else {
+                                // Token already expired or about to, refresh immediately
+                                Duration::from_secs(MIN_REFRESH_INTERVAL_SECS)
+                            }
+                        } else {
+                            // Can't decode JWT, use default refresh interval
+                            debug!("Could not decode JWT expiry, using default refresh interval");
+                            Duration::from_secs(DEFAULT_REFRESH_INTERVAL_SECS)
+                        };
+
+                        debug!("Next token refresh in {:?}", sleep_duration);
+
+                        // Sleep until refresh time or cancellation
+                        let sleep_fut = tokio::time::sleep(sleep_duration).fuse();
+                        pin_mut!(sleep_fut);
+                        select_biased! {
+                            _ = cancel_fut => {
+                                debug!("Auth refresh cancelled during sleep");
+                                let mut client = client.clone();
+                                let _ = client.set_auth(None).await;
+                                if was_authenticated {
+                                    let on_auth_change_clone = on_auth_change.clone();
+                                    let future = (on_auth_change_clone)(false);
+                                    let _ = future.await;
+                                }
+                                break;
+                            }
+                            _ = sleep_fut => {
+                                // Time to refresh, continue loop
+                            }
+                        }
+                    }
+                    None => {
+                        // No token - clear auth
+                        debug!("Token fetcher returned None, clearing auth");
+                        let mut client = client.clone();
+                        let _ = client.set_auth(None).await;
+
+                        if was_authenticated {
+                            is_auth_clone.store(false, Ordering::SeqCst);
+                            let on_auth_change_clone = on_auth_change.clone();
+                            let future = (on_auth_change_clone)(false);
+                            tokio::spawn(async move {
+                                let _ = future.await;
+                            });
+                        }
+
+                        // Exit the loop when fetch_token returns None
+                        break;
+                    }
+                }
+            }
+
+            debug!("Auth refresh loop ended");
+        });
+
+        Ok(AuthHandle::new(cancel_sender, is_authenticated))
     }
 }
 
