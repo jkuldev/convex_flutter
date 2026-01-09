@@ -442,7 +442,22 @@ The example demonstrates:
 
 ### Build Issues
 
-- **Rust not found**: Install via `rustup` and ensure `cargo` is on your PATH (not needed for web)
+- **Rust not found** (native platforms only):
+  - Visit [Rust Getting Started Guide](https://www.rust-lang.org/learn/get-started)
+  - Install Rust:
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+  - Update your PATH (add to `~/.bashrc`, `~/.zshrc`, or equivalent):
+    ```bash
+    source "$HOME/.cargo/env"
+    ```
+  - Verify installation:
+    ```bash
+    rustc --version
+    cargo --version
+    ```
+  - **Note**: Not needed for web platform
 - **Android build issues**: Use JDK 11, ensure NDK is installed via Android SDK Manager
 - **iOS/macOS**: Run `pod install` inside the `example/ios` or your app's `ios` folder if needed
 - **Windows**: Install Visual Studio Build Tools with C++ workload

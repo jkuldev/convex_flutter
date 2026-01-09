@@ -1,7 +1,17 @@
-# Architecture & Rust Dependency - convex_flutter
+# Architecture & Platform Support - convex_flutter
+
+## v3.0.0 Major Update: Web Platform Support 🌐
+
+**convex_flutter** now supports **ALL Flutter platforms** including web! The package intelligently uses different implementations based on the target platform:
+
+- **Web**: Pure Dart implementation (no Rust required)
+- **Native** (Android, iOS, macOS, Windows, Linux): FFI + Rust SDK
 
 ## Table of Contents
-- [Why Rust is Required](#why-rust-is-required)
+- [Platform Architecture Overview](#platform-architecture-overview)
+- [Web Platform Implementation (NEW in v3.0.0)](#web-platform-implementation-new-in-v300)
+- [Native Platform Implementation](#native-platform-implementation)
+- [Why Rust is Required (Native Only)](#why-rust-is-required-native-only)
 - [Who Needs Rust Installed](#who-needs-rust-installed)
 - [How the Package Works](#how-the-package-works)
 - [Can Rust Dependency Be Removed?](#can-rust-dependency-be-removed)
@@ -11,10 +21,162 @@
 
 ---
 
-## Why Rust is Required
+## Platform Architecture Overview
+
+### Multi-Platform Implementation Strategy
+
+The package uses **conditional imports** to select the appropriate implementation at compile time:
+
+```dart
+// lib/src/convex_client.dart
+import 'impl/convex_client_native.dart'  // FFI + Rust
+    if (dart.library.js_interop) 'impl/convex_client_web.dart';  // Pure Dart
+```
+
+### Architecture Comparison
+
+| Platform | Implementation | Rust Required | WebSocket Source |
+|----------|---------------|---------------|------------------|
+| **Web** | Pure Dart | ❌ No | Browser WebSocket API |
+| **Android** | FFI + Rust | ✅ Yes (build-time) | Convex Rust SDK |
+| **iOS** | FFI + Rust | ✅ Yes (build-time) | Convex Rust SDK |
+| **macOS** | FFI + Rust | ✅ Yes (build-time) | Convex Rust SDK |
+| **Windows** | FFI + Rust | ✅ Yes (build-time) | Convex Rust SDK |
+| **Linux** | FFI + Rust | ✅ Yes (build-time) | Convex Rust SDK |
+
+---
+
+## Web Platform Implementation (NEW in v3.0.0)
+
+### Why Web Needed Different Approach
+
+**Problem**: FFI (Foreign Function Interface) doesn't work on web platform
+- Web runs in browser JavaScript sandbox
+- Cannot execute native compiled code
+- `dart:ffi` is not available on web
+
+**Solution**: Implement Convex WebSocket protocol in pure Dart
+
+### Web Architecture
+
+```
+┌─────────────────────────────────────┐
+│   Dart Layer (Flutter Web App)      │  ← Your app code
+│   - ConvexClient API (same as native)│
+│   - Streams, Futures                 │
+│   - Flutter-friendly interfaces      │
+└──────────────┬──────────────────────┘
+               │ Direct Dart calls (no FFI)
+┌──────────────▼──────────────────────┐
+│   WebConvexClient (Pure Dart)        │  ← Pure Dart implementation
+│   - WebSocket management             │
+│   - Convex wire protocol             │
+│   - State management                 │
+│   - Subscription handling            │
+└──────────────┬──────────────────────┘
+               │ package:web WebSocket API
+┌──────────────▼──────────────────────┐
+│   Browser WebSocket                  │  ← Browser native API
+│   - Real-time WebSocket client       │
+│   - Managed by browser               │
+│   - No compilation required          │
+└─────────────────────────────────────┘
+```
+
+### Web Implementation Details
+
+**File**: `lib/src/impl/convex_client_web.dart` (~800 lines of pure Dart)
+
+**Key Features Implemented**:
+- ✅ RFC 4122 compliant UUID v4 generation for session IDs
+- ✅ Convex WebSocket wire protocol implementation:
+  - Connect message with session management
+  - ModifyQuerySet with version tracking
+  - Mutation/Action/Query execution
+  - Transition messages for real-time updates
+  - Ping/Pong heartbeat
+- ✅ Real-time subscriptions with automatic cleanup
+- ✅ Connection state monitoring
+- ✅ Automatic reconnection with exponential backoff
+- ✅ Authentication token management
+- ✅ Error handling and timeout management
+
+**Dependencies (Web Only)**:
+```yaml
+dependencies:
+  web: ^1.0.0    # Browser WebSocket API access
+  http: ^1.2.0   # HTTP client for REST fallback (future)
+```
+
+**Protocol Messages**:
+```dart
+// Connect
+{
+  "type": "Connect",
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000",  // RFC 4122 UUID
+  "maxObservedTimestamp": null,
+  "connectionCount": 1,
+  "clientTs": 1704931200000,
+  "lastCloseReason": null
+}
+
+// ModifyQuerySet (subscribe)
+{
+  "type": "ModifyQuerySet",
+  "baseVersion": 0,
+  "newVersion": 1,
+  "modifications": [{
+    "type": "Add",
+    "queryId": 1,
+    "udfPath": "messages:list",
+    "args": [{}]
+  }]
+}
+
+// Mutation
+{
+  "type": "Mutation",
+  "requestId": 1,  // u32 integer
+  "udfPath": "messages:send",
+  "args": [{"body": "Hello"}]
+}
+```
+
+### Web vs Native API Parity
+
+**100% API Compatibility**: Same public API works on both platforms
+
+```dart
+// This exact code works identically on web AND native!
+final client = ConvexClient.instance;
+
+// Queries
+final result = await client.query('users:list', {});
+
+// Mutations
+await client.mutation(name: 'messages:send', args: {'body': 'Hi'});
+
+// Subscriptions
+final sub = await client.subscribe(
+  name: 'messages:list',
+  args: {},
+  onUpdate: (data) => print(data),
+  onError: (msg, data) => print(msg),
+);
+
+// Connection state
+client.connectionState.listen((state) => print(state));
+
+// Authentication
+await client.setAuth(token: 'jwt-token');
+```
+
+---
+
+## Native Platform Implementation
 
 ### TL;DR
-**convex_flutter is an FFI (Foreign Function Interface) plugin that wraps the official Convex Rust SDK.** This means the core Convex client logic is written in Rust and compiled to native code, with Dart code calling into it via FFI.
+**Native platforms use FFI (Foreign Function Interface) to wrap the official Convex Rust SDK.** This means the core Convex client logic is written in Rust and compiled to native code, with Dart code calling into it via FFI.
 
 ### Technical Explanation
 
@@ -592,10 +754,10 @@ Thank you for consideration.
 **A**: WebSockets provide real-time bidirectional communication. With HTTP, you'd need to poll for updates, which is inefficient, drains battery, and has higher latency. Convex's real-time subscriptions require WebSockets.
 
 ### Q: Can I use this package without installing Rust?
-**A**: Currently, no. The Flutter build system requires Rust to compile the native code. We're exploring pre-compiled binaries as a solution.
+**A**: ✅ YES for web platform! No Rust required when building for web. For native platforms (Android, iOS, macOS, Windows, Linux), Rust is still required at build-time. If your app only targets web, you can skip Rust installation entirely.
 
 ### Q: Will this work on web platform?
-**A**: Flutter web support for FFI plugins is limited. Current package targets mobile/desktop platforms. For web, a pure Dart implementation would be needed.
+**A**: ✅ YES! As of v3.0.0, web platform is fully supported with a pure Dart implementation. No Rust required for web builds. See [Web Platform Implementation](#web-platform-implementation-new-in-v300) section above.
 
 ### Q: How much does Rust compilation add to build time?
 **A**: First build: 2-5 minutes. Subsequent builds: 30-60 seconds (cached). Release builds take longer (5-10 minutes).
@@ -617,6 +779,6 @@ If you have ideas for reducing Rust dependency burden:
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2026-01-09
-**Package Version**: 2.2.0
+**Document Version**: 2.0
+**Last Updated**: 2026-01-10
+**Package Version**: 3.0.0

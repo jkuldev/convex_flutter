@@ -1,6 +1,6 @@
 name: convex_flutter
-description: A Flutter package for Convex backend integration with real-time WebSocket connection state monitoring, automatic token refresh, and comprehensive lifecycle management. Build reactive Flutter apps with Convex.
-version: 2.2.0
+description: Multi-platform Convex backend integration for Flutter. Real-time WebSocket, subscriptions, auth, lifecycle management. Supports web (pure Dart) and native.
+version: 3.0.0
 repository: https://github.com/jkuldev/convex_flutter
 homepage: https://jkuldev.com
 
