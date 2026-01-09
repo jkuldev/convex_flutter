@@ -333,7 +333,7 @@ class WebConvexClient implements IConvexClient {
     }
 
     final messageJson = jsonEncode(message);
-    ws.send(messageJson);
+    ws.send(messageJson.toJS);
 
     debugPrint('=== [WebConvexClient] Sent message: ${message['type']} (id: ${message['id']}) ===');
   }
@@ -677,6 +677,14 @@ class _WebSubscriptionHandle implements SubscriptionHandle {
       onCancel();
     }
   }
+
+  @override
+  void dispose() {
+    cancel();
+  }
+
+  @override
+  bool get isDisposed => _isCancelled;
 }
 
 /// Web implementation of AuthHandle.
