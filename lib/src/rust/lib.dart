@@ -8,8 +8,19 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'lib.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `connected_client`, `handle_direct_function_result`, `internal_action`, `internal_mutation`, `internal_set_auth`, `internal_subscribe`, `new`, `parse_json_args`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `from`
+// These functions are ignored because they are not marked as `pub`: `connected_client`, `decode_jwt_expiry`, `handle_direct_function_result`, `internal_action`, `internal_mutation`, `internal_set_auth`, `internal_subscribe`, `new`, `new`, `parse_json_args`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `JwtClaims`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`, `fmt`, `fmt`, `from`, `from`
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AuthHandle>>
+abstract class AuthHandle implements RustOpaqueInterface {
+  /// Disposes the auth session, stopping the token refresh loop and clearing authentication.
+  @override
+  void dispose();
+
+  /// Returns whether the user is currently authenticated.
+  bool isAuthenticated();
+}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CallbackSubscriber>>
 abstract class CallbackSubscriber
@@ -54,6 +65,29 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
     clientId: clientId,
   );
 
+  /// Sets up WebSocket connection state change listener.
+  ///
+  /// Must be called BEFORE any queries/mutations to capture all state changes.
+  /// The callback will be invoked whenever the WebSocket transitions between
+  /// Connected and Connecting states.
+  ///
+  /// # Arguments
+  ///
+  /// * `on_state_change` - Async callback invoked when connection state changes
+  ///
+  /// # Example
+  ///
+  /// ```dart
+  /// await client.onWebsocketStateChange(
+  ///   onStateChange: (state) async {
+  ///     print('Connection state: ${state.name}');
+  ///   },
+  /// );
+  /// ```
+  Future<void> onWebsocketStateChange({
+    required FutureOr<void> Function(WebSocketConnectionState) onStateChange,
+  });
+
   /// Executes a query on the Convex backend.
   Future<String> query({
     required String name,
@@ -62,6 +96,20 @@ abstract class MobileConvexClient implements RustOpaqueInterface {
 
   /// Sets authentication token for the client.
   Future<void> setAuth({String? token});
+
+  /// Sets authentication with automatic token refresh.
+  ///
+  /// The `fetch_token` callback is called:
+  /// - Immediately to get the initial token
+  /// - Automatically when the token is about to expire (60 seconds before expiry)
+  ///
+  /// The `on_auth_change` callback is called whenever auth state changes.
+  ///
+  /// Returns an AuthHandle that can be used to dispose the auth session.
+  Future<AuthHandle> setAuthWithRefresh({
+    required FutureOr<String?> Function() fetchToken,
+    required FutureOr<void> Function(bool) onAuthChange,
+  });
 
   /// Subscribes to real-time updates from a Convex query.
   Future<SubscriptionHandle> subscribe({
@@ -99,4 +147,16 @@ sealed class ClientError with _$ClientError implements FrbException {
   /// An unexpected server-side error from a remote Convex function.
   const factory ClientError.serverError({required String msg}) =
       ClientError_ServerError;
+}
+
+/// WebSocket connection state exposed to Flutter/Dart.
+///
+/// This enum represents the current state of the WebSocket connection
+/// to the Convex backend, allowing real-time connection monitoring.
+enum WebSocketConnectionState {
+  /// The WebSocket is open and connected to the Convex backend.
+  connected,
+
+  /// The WebSocket is closed and is connecting or reconnecting.
+  connecting,
 }

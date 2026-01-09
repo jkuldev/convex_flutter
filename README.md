@@ -8,18 +8,28 @@ This package wraps the [Convex Rust library](https://github.com/get-convex/conve
 
 - Real-time subscriptions to Convex queries
 - Simple Dart API for queries, mutations, and actions
-- Authentication token support via `setAuth`
+- Authentication with automatic token refresh
+- Auth state stream for reactive UI updates
+- **WebSocket connection state** - Real-time connection status monitoring via streams
+- **Operation timeouts** - Configurable timeout for all queries, mutations, and actions
+- **Lifecycle monitoring** - Stream of app lifecycle events (foreground/background)
+- **Connection management** - Manual connection checking and reconnect functionality
+- **Singleton pattern** - Access client anywhere via `ConvexClient.instance`
 - Works on Android, iOS, macOS, Windows, and Linux (FFI)
 
 ## Installation
 
-```
+Add the package to your Flutter project:
+
+```bash
 flutter pub add convex_flutter
 ```
 
+That's it! The health check query mentioned below is optional - you can start using the SDK immediately without it.
+
 ## Requirements
 
-- Dart SDK ≥ 3.8.1 and Flutter ≥ 3.3.0
+- Dart SDK >= 3.8.1 and Flutter >= 3.3.0
 - A working Rust toolchain (rustup + cargo) to build native code
 - Platform toolchains:
   - Android: JDK 11 and Android SDK/NDK
@@ -29,22 +39,61 @@ flutter pub add convex_flutter
 
 ## Quick start
 
+### Optional: Create a Health Check Query (Recommended)
+
+For connection monitoring and health checks, it's recommended to create a lightweight health check query in your Convex backend. This is **optional** but provides a clean way to verify connectivity without side effects.
+
+Create a file `convex/health.ts` in your Convex backend:
+
+```typescript
+// convex/health.ts
+import { query } from "./_generated/server";
+
+export const ping = query({
+  args: {},
+  handler: async () => {
+    return "ok";
+  },
+});
+```
+
+This creates a lightweight endpoint at `health:ping` that you can use for connection health checks. It has no side effects and returns instantly.
+
+### Initialize the Client
+
 ```dart
 import 'package:convex_flutter/convex_flutter.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Initialize the client once (singleton)
-  final client = await ConvexClient.init(
-    deploymentUrl: 'https://my-app.convex.cloud',
-    clientId: 'flutter-app-1.0',
+  await ConvexClient.initialize(
+    ConvexConfig(
+      deploymentUrl: 'https://my-app.convex.cloud',
+      clientId: 'flutter-app-1.0',
+      operationTimeout: Duration(seconds: 30), // Optional, defaults to 30s
+      healthCheckQuery: 'health:ping', // Optional, for connection checks (requires health.ts)
+    ),
   );
 
-  // Optional: authenticate
+  runApp(MyApp());
+}
+
+// Access the client anywhere in your app
+void example() async {
+  final client = ConvexClient.instance;
+
+  // Optional: authenticate (see Authentication section below)
   await client.setAuth(token: 'YOUR_AUTH_TOKEN');
 
-  // Query
-  final users = await client.query('users:list', {'limit': '10'});
-  print('Users: $users');
+  // Query (with timeout)
+  try {
+    final users = await client.query('users:list', {'limit': '10'});
+    print('Users: $users');
+  } on TimeoutException {
+    print('Connection timeout!');
+  }
 
   // Subscribe to real-time updates
   final sub = await client.subscribe(
@@ -68,14 +117,270 @@ Future<void> main() async {
 }
 ```
 
+## Authentication
+
+The SDK provides comprehensive authentication support for Convex backends.
+
+### Simple Token Authentication
+
+For basic scenarios or testing, set a static JWT token:
+
+```dart
+// Set authentication
+await client.setAuth(token: 'your-jwt-token');
+
+// Clear authentication
+await client.setAuth(token: null);
+```
+
+### Automatic Token Refresh (Recommended)
+
+For production apps, use `setAuthWithRefresh` which automatically refreshes tokens 60 seconds before they expire:
+
+```dart
+final authHandle = await client.setAuthWithRefresh(
+  fetchToken: () async {
+    // Return JWT from your auth provider (Firebase, Clerk, Auth0, etc.)
+    return await FirebaseAuth.instance.currentUser?.getIdToken();
+  },
+  onAuthChange: (isAuthenticated) {
+    print('Auth state: $isAuthenticated');
+  },
+);
+
+// When signing out, dispose the auth handle
+authHandle.dispose();
+```
+
+### Auth State Stream
+
+Listen to authentication state changes reactively:
+
+```dart
+client.authState.listen((isAuthenticated) {
+  setState(() => _isLoggedIn = isAuthenticated);
+});
+```
+
+### Sync Auth Check
+
+Check current auth state synchronously:
+
+```dart
+if (client.isAuthenticated) {
+  // User is authenticated
+}
+```
+
+### Clear Authentication
+
+Clear auth and stop any running token refresh:
+
+```dart
+await client.clearAuth();
+```
+
+## Connection Management
+
+The SDK provides tools for managing connection state and handling network interruptions.
+
+### Operation Timeouts
+
+All queries, mutations, and actions have configurable timeouts (default: 30 seconds):
+
+```dart
+await ConvexClient.initialize(
+  ConvexConfig(
+    deploymentUrl: 'https://my-app.convex.cloud',
+    operationTimeout: Duration(seconds: 45), // Custom timeout
+  ),
+);
+
+// Operations will throw TimeoutException if they exceed the timeout
+try {
+  await ConvexClient.instance.query('slowQuery', {});
+} on TimeoutException {
+  print('Operation timed out!');
+}
+```
+
+### Real-Time WebSocket Connection State (Recommended)
+
+Monitor WebSocket connection state in real-time using streams. This is the recommended approach for connection monitoring:
+
+```dart
+// Listen to connection state changes
+ConvexClient.instance.connectionState.listen((state) {
+  switch (state) {
+    case WebSocketConnectionState.connected:
+      print('WebSocket connected!');
+      // Update UI, enable features
+      break;
+    case WebSocketConnectionState.connecting:
+      print('WebSocket connecting...');
+      // Show loading indicator
+      break;
+  }
+});
+
+// Or use in a StreamBuilder for reactive UI
+StreamBuilder<WebSocketConnectionState>(
+  stream: ConvexClient.instance.connectionState,
+  initialData: ConvexClient.instance.currentConnectionState,
+  builder: (context, snapshot) {
+    final state = snapshot.data ?? WebSocketConnectionState.connecting;
+    final isConnected = state == WebSocketConnectionState.connected;
+
+    return Chip(
+      avatar: Icon(isConnected ? Icons.cloud_done : Icons.cloud_sync),
+      label: Text(isConnected ? 'Connected' : 'Connecting'),
+      backgroundColor: isConnected ? Colors.green : Colors.orange,
+    );
+  },
+)
+
+// Synchronous access to current state
+if (ConvexClient.instance.isConnected) {
+  // WebSocket is connected
+}
+```
+
+**Features:**
+- Real-time state updates via Stream (no polling needed)
+- Automatic state transitions when WebSocket connects/disconnects
+- Synchronous getter for immediate state access
+- Works across all platforms
+
+**Note:** The WebSocket connection is established lazily when the first operation (query, mutation, subscribe, action) is executed.
+
+**Optional: Auto-Connect on Startup**
+
+To establish the connection immediately when your app starts (recommended for better UX), trigger a lightweight query in your app's initialization. Using a dedicated health check query is the cleanest approach:
+
+**1. Create a health check query in your Convex backend (optional but recommended):**
+
+```typescript
+// convex/health.ts
+import { query } from "./_generated/server";
+
+export const ping = query({
+  args: {},
+  handler: async () => {
+    return "ok";
+  },
+});
+```
+
+**2. Trigger it on app startup:**
+
+```dart
+// In your home screen or app initialization
+@override
+void initState() {
+  super.initState();
+  // Trigger connection immediately with health check
+  ConvexClient.instance.query('health:ping', {});
+}
+```
+
+**Alternative:** You can use any existing lightweight query instead of creating a dedicated health check:
+
+```dart
+// Use any existing query to trigger connection
+ConvexClient.instance.query('users:list', {'limit': '1'});
+```
+
+### Manual Connection Check (Deprecated)
+
+For backward compatibility, you can check connection status manually using a health check query:
+
+```dart
+// Configure a lightweight query for health checks
+await ConvexClient.initialize(
+  ConvexConfig(
+    deploymentUrl: 'https://my-app.convex.cloud',
+    healthCheckQuery: 'health:ping', // Lightweight health check query
+  ),
+);
+
+// Check connection status (deprecated - use connectionState stream instead)
+final status = await ConvexClient.instance.checkConnection();
+
+switch (status) {
+  case ConnectionStatus.connected:
+    print('Connected!');
+  case ConnectionStatus.timeout:
+    print('Connection timeout');
+  case ConnectionStatus.error:
+    print('Connection error');
+  case ConnectionStatus.unknown:
+    print('Not checked yet');
+}
+```
+
+### Manual Reconnect
+
+Trigger reconnection attempt manually:
+
+```dart
+final connected = await ConvexClient.instance.reconnect();
+if (connected) {
+  print('Reconnected successfully');
+}
+```
+
+## Lifecycle Monitoring
+
+Monitor app lifecycle events to handle foreground/background transitions.
+
+### Listen to Lifecycle Events
+
+```dart
+ConvexClient.instance.lifecycleEvents.listen((event) {
+  print('App lifecycle: $event');
+
+  if (event == AppLifecycleEvent.resumed) {
+    // App came to foreground
+    // Optionally reconnect or refresh data
+    ConvexClient.instance.reconnect();
+  }
+
+  if (event == AppLifecycleEvent.paused) {
+    // App went to background
+    // Optionally pause polling or save state
+  }
+});
+```
+
+### Lifecycle Events
+
+- `AppLifecycleEvent.resumed` - App in foreground
+- `AppLifecycleEvent.paused` - App in background
+- `AppLifecycleEvent.inactive` - App inactive (e.g., during phone call)
+- `AppLifecycleEvent.detached` - App being terminated
+
 ## API overview
 
-- `ConvexClient.init({ deploymentUrl, clientId })` → initializes a singleton client
-- `query(String name, Map<String, String> args)` → runs a query
-- `mutation({ required String name, required Map<String, dynamic> args })` → runs a mutation
-- `action({ required String name, required Map<String, dynamic> args })` → runs an action
-- `subscribe({ name, args, onUpdate, onError })` → returns a `SubscriptionHandle`
-- `setAuth({ String? token })` → sets/clears the auth token
+| Method | Description |
+|--------|-------------|
+| `ConvexClient.initialize(ConvexConfig)` | Initialize singleton client with configuration |
+| `ConvexClient.instance` | Access singleton instance anywhere |
+| `query(name, args)` | Execute a query with timeout, returns JSON string |
+| `mutation({ name, args })` | Execute a mutation with timeout, returns JSON string |
+| `action({ name, args })` | Execute an action with timeout, returns JSON string |
+| `subscribe({ name, args, onUpdate, onError })` | Subscribe to real-time updates, returns `SubscriptionHandle` |
+| `setAuth({ token })` | Set or clear static auth token |
+| `setAuthWithRefresh({ fetchToken, onAuthChange })` | Set auth with automatic token refresh, returns `AuthHandleWrapper` |
+| `authState` | Stream of auth state changes (`Stream<bool>`) |
+| `isAuthenticated` | Current auth state (sync getter) |
+| `clearAuth()` | Clear auth and stop token refresh |
+| `connectionState` | Real-time WebSocket connection state stream (`Stream<WebSocketConnectionState>`) |
+| `currentConnectionState` | Current connection state (sync getter) |
+| `isConnected` | Returns true if WebSocket is connected (sync getter) |
+| `checkConnection()` | _(Deprecated)_ Manually check connection status, returns `ConnectionStatus` |
+| `reconnect()` | Manually trigger reconnection attempt, returns `bool` |
+| `lifecycleEvents` | Stream of app lifecycle events (`Stream<AppLifecycleEvent>`) |
+| `dispose()` | Clean up client resources |
 
 See the inline docs in `lib/src/convex_client.dart` for details.
 
@@ -87,6 +392,17 @@ An example is provided under `example/`:
 cd example
 flutter run
 ```
+
+The example demonstrates:
+- Real-time chat with subscriptions
+- Sending messages with mutations
+- Authentication with JWT tokens
+- Auth state management
+- **WebSocket connection state monitoring** with visual indicators
+- Lifecycle event monitoring (shows app state in AppBar)
+- Connection screen with real-time state history
+- Automatic connection on app startup
+- Singleton pattern usage (`ConvexClient.instance`)
 
 ## Troubleshooting
 
@@ -101,4 +417,4 @@ Contributions are welcome! Please open an issue or pull request.
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
