@@ -333,8 +333,8 @@ class WebConvexClient implements IConvexClient {
   /// Sends Connect handshake message.
   void _sendConnectMessage() {
     try {
-      // Generate or reuse session ID
-      _sessionId ??= 'web-session-${DateTime.now().microsecondsSinceEpoch}';
+      // Generate or reuse session ID (must be valid UUID format)
+      _sessionId ??= _generateUuid();
 
       _sendMessage({
         'type': 'Connect',
@@ -346,6 +346,21 @@ class WebConvexClient implements IConvexClient {
     } catch (e) {
       debugPrint('ERROR: [WebConvexClient] Failed to send Connect: $e');
     }
+  }
+
+  /// Generates a UUID v4 string.
+  String _generateUuid() {
+    // Generate a simple UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    final rand1 = (timestamp >> 32) & 0xFFFFFFFF;
+    final rand2 = timestamp & 0xFFFFFFFF;
+    final rand3 = _messageIdCounter++;
+
+    return '${rand1.toRadixString(16).padLeft(8, '0')}-'
+           '${rand2.toRadixString(16).padLeft(4, '0').substring(0, 4)}-'
+           '4${rand2.toRadixString(16).padLeft(3, '0').substring(0, 3)}-'
+           '${((rand3 & 0x3F) | 0x80).toRadixString(16)}${rand3.toRadixString(16).padLeft(2, '0').substring(0, 2)}-'
+           '${timestamp.toRadixString(16).padLeft(12, '0')}';
   }
 
   /// Updates connection state and emits to stream.
