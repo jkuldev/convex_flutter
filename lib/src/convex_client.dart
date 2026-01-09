@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:convex_flutter/src/impl/convex_client_interface.dart';
 import 'package:convex_flutter/src/impl/convex_client_native.dart';
-// Conditional import for web implementation (will be created next)
-// import 'package:convex_flutter/src/impl/convex_client_web.dart' if (dart.library.js_interop) 'package:convex_flutter/src/impl/convex_client_web.dart';
+import 'package:convex_flutter/src/impl/convex_client_web.dart';
 import 'package:convex_flutter/src/rust/lib.dart' show WebSocketConnectionState, SubscriptionHandle, AuthHandle;
 import 'package:convex_flutter/src/connection_status.dart';
 import 'package:convex_flutter/src/convex_config.dart';
@@ -118,12 +117,7 @@ class ConvexClient {
 
     if (kIsWeb) {
       // Web platform: Use pure Dart WebSocket implementation
-      // TODO: Uncomment when WebConvexClient is implemented
-      // impl = await WebConvexClient.create(config);
-      throw UnimplementedError(
-        'Web platform support is under development. '
-        'WebConvexClient will be available in the next commit.',
-      );
+      impl = await WebConvexClient.create(config);
     } else {
       // Native platforms: Use FFI + Rust SDK
       impl = await NativeConvexClient.create(config);
