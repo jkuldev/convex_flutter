@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:convex_flutter/convex_flutter.dart';
 
@@ -10,18 +11,27 @@ class ConnectionScreen extends StatefulWidget {
 
 class _ConnectionScreenState extends State<ConnectionScreen> {
   final List<ConnectionEvent> _stateHistory = [];
+  StreamSubscription<WebSocketConnectionState>? _connectionSubscription;
 
   @override
   void initState() {
     super.initState();
-    ConvexClient.instance.connectionState.listen((state) {
-      setState(() {
-        _stateHistory.insert(0, ConnectionEvent(
-          state: state,
-          timestamp: DateTime.now()));
-        if (_stateHistory.length > 20) _stateHistory.removeLast();
-      });
+    _connectionSubscription = ConvexClient.instance.connectionState.listen((state) {
+      if (mounted) {
+        setState(() {
+          _stateHistory.insert(0, ConnectionEvent(
+            state: state,
+            timestamp: DateTime.now()));
+          if (_stateHistory.length > 20) _stateHistory.removeLast();
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _connectionSubscription?.cancel();
+    super.dispose();
   }
 
   @override

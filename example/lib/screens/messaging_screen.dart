@@ -38,6 +38,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
         name: "messages:list",
         args: {},
         onUpdate: (value) {
+          if (!mounted) return;
           final List<dynamic> jsonList = jsonDecode(value);
           final List<Map<String, dynamic>> parsedMessages =
               jsonList.map((e) => e as Map<String, dynamic>).toList();
@@ -48,12 +49,13 @@ class _MessagingScreenState extends State<MessagingScreen> {
           });
         },
         onError: (message, value) {
+          if (!mounted) return;
           debugPrint("Subscription error: $message");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: $message')));
         },
       );
-      setState(() => _isSubscribed = true);
+      if (mounted) setState(() => _isSubscribed = true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to subscribe: $e')));

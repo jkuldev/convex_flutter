@@ -88,16 +88,15 @@ class WebConvexClient implements IConvexClient {
     final client = WebConvexClient._(config);
 
     // Setup lifecycle observer
+    // Note: On web, we don't reconnect on lifecycle events because:
+    // 1. Page navigation triggers lifecycle events but doesn't disconnect WebSocket
+    // 2. WebSocket onclose handler already manages reconnection
+    // 3. Browser tab visibility changes are the only real "background" events
     client._lifecycleObserver = AppLifecycleObserver(
       onLifecycleChange: (event) {
         client._lifecycleController.add(event);
-
-        // Handle app resume - attempt reconnection if disconnected
-        if (event == AppLifecycleEvent.resumed &&
-            client._currentConnectionState != WebSocketConnectionState.connected) {
-          debugPrint('=== [WebConvexClient] App resumed, attempting reconnection ===');
-          client._scheduleReconnect();
-        }
+        // Do NOT trigger reconnection on web - let WebSocket manage itself
+        debugPrint('=== [WebConvexClient] Lifecycle event: ${event.name} (no action on web) ===');
       },
     );
 
