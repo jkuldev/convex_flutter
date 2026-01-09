@@ -19,9 +19,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _establishConnection() async {
     try {
       // Use a health check query to establish the WebSocket connection
+      // Create this query in your Convex backend: convex/health.ts
       await ConvexClient.instance.query(
-        'messages:list',
-        {'limit': '1'},
+        'health:ping',
+        {},
       );
       debugPrint('HomeScreen: Auto-connection established via health check query');
     } catch (e) {

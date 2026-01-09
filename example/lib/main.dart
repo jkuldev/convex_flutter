@@ -15,7 +15,7 @@ Future<void> main() async {
       deploymentUrl: "https://merry-grasshopper-563.convex.cloud",
       clientId: "flutter-app-1.0",
       operationTimeout: const Duration(seconds: 30),
-      healthCheckQuery: "messages:list",
+      healthCheckQuery: "health:ping",
     ),
   );
 

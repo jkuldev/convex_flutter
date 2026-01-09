@@ -92,10 +92,19 @@ None - backward compatibility maintained through deprecated methods
   - Dedicated Connection screen showing current state and history
   - Automatic connection on app startup
   - All 5 screens demonstrating different SDK capabilities
+  - Added HEALTH_CHECK.md guide for setting up health check queries
 
-- Comprehensive debug logging for troubleshooting connection issues
-- Updated documentation with WebSocket connection state usage examples
-- Deprecated `checkConnection()` in favor of real-time `connectionState` stream
+- Documentation improvements:
+  - Comprehensive WebSocket connection state usage examples
+  - Recommended health check query pattern using `health:ping`
+  - TypeScript example for creating health check query in Convex backend
+  - Updated all examples to use dedicated health check instead of `messages:list`
+  - Deprecated `checkConnection()` in favor of real-time `connectionState` stream
+
+- Code quality:
+  - Comprehensive debug logging for troubleshooting connection issues
+  - Better error handling in auto-connection flow
+  - Clearer comments explaining lazy initialization
 
 ### API Changes
 

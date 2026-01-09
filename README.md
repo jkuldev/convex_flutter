@@ -47,7 +47,7 @@ Future<void> main() async {
       deploymentUrl: 'https://my-app.convex.cloud',
       clientId: 'flutter-app-1.0',
       operationTimeout: Duration(seconds: 30), // Optional, defaults to 30s
-      healthCheckQuery: 'messages:list', // Optional, for connection checks
+      healthCheckQuery: 'health:ping', // Optional, for connection checks
     ),
   );
 
@@ -225,15 +225,31 @@ if (ConvexClient.instance.isConnected) {
 - Synchronous getter for immediate state access
 - Works across all platforms
 
-**Note:** The WebSocket connection is established lazily when the first operation (query, mutation, subscribe, action) is executed. To establish the connection immediately on app startup, trigger any operation in your app's initialization:
+**Note:** The WebSocket connection is established lazily when the first operation (query, mutation, subscribe, action) is executed. To establish the connection immediately on app startup, trigger a lightweight health check query in your app's initialization:
+
+**First, create a health check query in your Convex backend:**
+
+```typescript
+// convex/health.ts
+import { query } from "./_generated/server";
+
+export const ping = query({
+  args: {},
+  handler: async () => {
+    return "ok";
+  },
+});
+```
+
+**Then trigger it on app startup:**
 
 ```dart
 // In your home screen or app initialization
 @override
 void initState() {
   super.initState();
-  // Trigger connection immediately
-  ConvexClient.instance.query('messages:list', {'limit': '1'});
+  // Trigger connection immediately with health check
+  ConvexClient.instance.query('health:ping', {});
 }
 ```
 
@@ -246,7 +262,7 @@ For backward compatibility, you can check connection status manually using a hea
 await ConvexClient.initialize(
   ConvexConfig(
     deploymentUrl: 'https://my-app.convex.cloud',
-    healthCheckQuery: 'messages:list', // Any lightweight query
+    healthCheckQuery: 'health:ping', // Lightweight health check query
   ),
 );
 
