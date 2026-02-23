@@ -1,3 +1,13 @@
+## 3.0.1
+
+### Bug Fixes
+
+- **Fixed argument types from `Map<String, String>` to `Map<String, dynamic>`** across all operations (query, mutation, action, subscribe)
+  - Nested objects (e.g., `paginationOpts`), arrays, numbers, and booleans are now properly supported as argument values
+  - Fix applied consistently across public API, interface, native, and web implementations
+  - Removed `toString()` conversion in mutation and action that silently destroyed nested argument structures
+  - Closes #15
+
 ## 3.0.0
 
 ### Major New Features
