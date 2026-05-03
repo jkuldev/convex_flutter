@@ -1,3 +1,32 @@
+## 3.0.2
+
+### Bug Fixes
+
+- **Fix WebSocket reconnect leaving the client in an incorrect state**:
+  - Bumped Rust `convex` SDK from `0.10.2` → `0.10.4`. The `0.10.3`
+    release of `convex-rs` ships "Fix for incorrect client state on
+    WebSocket reconnect" — pending mutations were not being drained on
+    reconnect, so back-to-back signup/signout cycles in a single
+    process could wedge subsequent mutations indefinitely. Process
+    restart used to be the only workaround. (PR #17 by @SasLuca, 2026-02)
+  - `0.10.4` additionally fixes a memory leak in query subscriptions
+    (`convex-rs` issue #15) — relevant to apps that subscribe to many
+    Convex queries over a long-running session.
+
+### Improvements
+
+- Argument types for queries / mutations / actions are now
+  `Map<String, dynamic>` instead of `Map<String, String>`. Lets you
+  pass numbers, booleans, lists, and nested objects directly without
+  manual JSON encoding. (PR #16 by @igoriuz)
+
+### Compatibility
+
+- No public Dart API changes — `3.0.2` is a drop-in upgrade from `3.0.1`.
+- Rust crate `convex` now requires Rust 1.85 or newer (per upstream
+  `convex-rs` 0.10.4). Affects only contributors building the FFI
+  binaries from source; end-user apps consume precompiled binaries.
+
 ## 3.0.0
 
 ### Major New Features
